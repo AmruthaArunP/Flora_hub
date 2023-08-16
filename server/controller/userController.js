@@ -191,6 +191,8 @@ const otp_verification = async (req, res) => {
     }
 };
 
+
+
 const showForgotOtp = async (req, res) => {
   try {
       const categoryData = await Category.find({ is_blocked: false });
@@ -229,7 +231,7 @@ const resendForgotOtp = async (req, res) => {
       const generatedOtp = helperFunction.generateOTP();
       forgotPasswordOtp = generatedOtp;
 
-      helperFunction.sendOtpMail(email, forgotPasswordOtp);
+      helperFunction.sendOtpMail(emailId, forgotPasswordOtp);
       res.redirect("/forgotOtpEnter");
       setTimeout(() => {
           forgotPasswordOtp = null;
@@ -242,12 +244,12 @@ const resendForgotOtp = async (req, res) => {
 const updatePassword = async (req, res) => {
   try {
       const newPassword = req.body.password;
-      const securedPassword = await helperFunction.EnteredOtpsecurePassword(newPassword);
+      const securedPassword = await helperFunction.securePassword(newPassword);
 
-      const userData = await User.findOneAndUpdate({ email: emailId }, { $set: { password: securedPassword } });
-      if (userData) {
+      const userDataS = await userData.findOneAndUpdate({ email: emailId }, { $set: { password: securedPassword } });
+      if (userDataS) {
           req.session.passwordUpdated = true;
-          res.render("login",{blocked:false,loggedIn:false});
+          res.render("user_login",{blocked:false,loggedIn:false});
       } else {
           console.log("Something error happened");
       }

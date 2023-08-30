@@ -29,6 +29,19 @@ var schema = new mongoose.Schema({
         type: Boolean,
         required: true,
       },
+
+    cart: [
+        {
+            product: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "productCollection",
+            },
+            quantity: {
+                type: Number,
+                default: 1,
+            },
+        },
+    ],
 })
 
 

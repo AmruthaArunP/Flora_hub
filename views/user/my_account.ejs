@@ -1,6 +1,8 @@
 <%-include('_header.ejs') -%>
 
 
+
+
     <!--header area start-->
 
     <!--offcanvas menu area start-->
@@ -47,8 +49,9 @@
                                     <li><a href="#account-details" data-bs-toggle="tab" class="nav-link">Edit
                                             details</a>
                                     </li>
-                                    <li> <a href="" data-bs-toggle="tab" class="nav-link">Orders</a></li>
+                                    <li> <a href="#orders" data-bs-toggle="tab" class="nav-link">Orders</a></li>
                                     <li><a href="#address" data-bs-toggle="tab" class="nav-link">Addresses</a></li>
+                                    <li><a href="#mywallet" data-bs-toggle="tab" class="nav-link">My Wallet</a></li>
 
                                     <!-- <li><a href="/user_logout" class="nav-link">logout</a></li> -->
                                     <li><a href="/user_logout" class="nav-link" id="logoutLink">logout</a></li>
@@ -72,10 +75,71 @@
                                         <a href="#">Edit your password and account details.</a>
                                     </p>
                                 </div>
+
+                                <!-- order details -->
                                 <div class="tab-pane fade" id="orders">
                                     <h3>Orders</h3>
                                     <div class="table-responsive">
-                                        
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>Orderd Date</th>
+                                                    <!-- <th>Expected Date</th> -->
+                                                    <th>Total</th>
+                                                    <th>Status</th>
+                                                    <th>Details</th>
+                                                    <!-- <th><strong>X</strong></th> -->
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% orderData.forEach((data)=> { %>
+
+                                                    <tr>
+                                                        <td>
+                                                            <%=data.orderId%>
+                                                        </td>
+                                                        <!-- Assuming data.date contains the given timestamp -->
+                                                        <td>
+                                                            <%= (new Date(data.date)).toDateString() %>
+                                                        </td>
+
+                                                        <td>
+                                                            <%=data.total%>/-
+                                                        </td>
+                                                        <!-- order status -->
+                                                        <% if (data.status==="Pending" ) { %>
+                                                            <td style="color: orange; font-weight: 400;">
+                                                                <%= data.status %>
+                                                            </td>
+                                                            <% } else if (data.status==="Shipped" ) { %>
+                                                                <td style="color: green; font-weight: 400;">
+                                                                    <%= data.status %>
+                                                                </td>
+                                                                <% } else if (data.status==="Delivered" ) { %>
+                                                                    <td style="color: teal; font-weight: 400;">
+                                                                        <%= data.status %>
+                                                                    </td>
+                                                                    <% } else if (data.status==="Cancelled" ) { %>
+                                                                        <td style="color: red; font-weight: 400;">
+                                                                            <%= data.status %>
+                                                                        </td>
+                                                                        <% } else if (data.status==="Returned" ) { %>
+                                                                            <td
+                                                                                style="color: purple; font-weight: 400;">
+                                                                                <%= data.status %>
+                                                                            </td>
+                                                                            <% } %>
+                                                                                <!-- order status ends -->
+
+                                                                                <td><a href="/userOrderDetails?orderId=<%= data._id %>"
+                                                                                        class="view">view</a></td>
+                                                                                <!-- <td><a href="cart.html"
+                                                                                        class="view">cancel</a></td> -->
+                                                    </tr>
+                                                    <%})%>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="downloads">
@@ -111,23 +175,25 @@
                                 </div>
                                 <div class="tab-pane" id="profile">
                                     <h4>
-                                       <strong><%=userDatas.user_name%></strong> 
+                                        <strong>
+                                            <%=userMeta.user_name%>
+                                        </strong>
                                     </h4>
                                     <br>
                                     <address>
-                                       
+
                                         <span><strong>Email: </strong>
-                                            <%=userDatas.email%>
+                                            <%=userMeta.email%>
                                         </span>
                                         <br>
                                         <br>
                                         <span><strong>Phone:</strong>
-                                            <%=userDatas.phone%>
+                                            <%=userMeta.phone%>
                                         </span>,
                                         <br>
                                         <br>
                                         <span><strong>Address </strong>
-                                            <%=userDatas.address%>
+                                            <%=userMeta.address%>
                                         </span>
 
                                         <br>
@@ -138,10 +204,92 @@
                                 <div class="tab-pane" id="address">
                                     <p>The following addresses will be used on the checkout page by default.</p>
                                     <h4 class="billing-address">Billing address</h4>
-                                 
+                                    <% addressData.forEach((Data)=> { %>
+                                        <address>
+                                            <a href="/editAddress?addressId=<%=Data._id%>" class="view" style="color: blue;">Edit</a>
+                                            <br>
+                                            <span><strong> Name: </strong>
+                                                <%=Data.name%>
+                                            </span>
+                                            <span><strong>Email: </strong>
+                                                <%=Data.email%>
+                                            </span>
+                                            <span><strong>Phone </strong>
+                                                <%=Data.mobile%>
+                                            </span>
+                                            <span><strong>City:</strong>
+                                                <%=Data.city%>
+                                            </span>,
+                                            <br>
+                                            <span><strong>State:</strong>
+                                                <%=Data.state%>
+                                            </span>,
+                                            <br>
+                                            <span><strong>Address:</strong>
+                                                <%=Data.addressLine%>
+                                            </span>,
+                                            <br>
+                                            <span><strong>PIN:</strong>
+                                                <%=Data.pincode%>
+                                            </span>
+                                            <br>
+                                            <hr>
+                                        </address>
+
+                                        <% }) %>
                                 </div>
+
+                                <!--  -->
+
+                                
+
+                                <!--  -->
+
+                                <!-- wallet -->
+                              
+
+                                <!--  -->
+                                <div class="tab-pane" id="address">
+                                    <div id="editPopup" class="popup" style="display: none;">
+                                        <div class="popup-content">
+                                            <span class="close" id="closePopup">&times;</span>
+                                            <!-- Your form elements go here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--  -->
+
+
                                 <div class="tab-pane fade" id="account-details">
                                     <h3>Account details </h3>
+                                    <div class="login">
+                                        <div class="login_form_container">
+                                            <div class="account_login_form">
+                                                <form id="profileUpdate">
+
+                                                    <label>Name</label>
+                                                    <input type="text" value="<%=userMeta.user_name%>" name="user_name">
+
+                                                    <label>Email</label>
+                                                    <input type="text" value="<%=userMeta.email%>" name="email">
+                                                    <label>Phone</label>
+                                                    <input type="text" value="<%=userMeta.phone%>" name="phone">
+                                                    <label>Address</label>
+                                                    <input type="text" value="<%=userMeta.address%>" name="address">
+
+
+
+                                                    <div class="save_button primary_btn default_button">
+                                                        <button type="submit">Update</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="address-details">
+                                    <h3>Address details </h3>
                                     <div class="login">
                                         <div class="login_form_container">
                                             <div class="account_login_form">
@@ -154,13 +302,19 @@
                                                     <input type="text" name="email-name">
                                                     <label>Phone</label>
                                                     <input type="text" name="phone">
-                                                    <label>Password</label>
-                                                    <input type="password" name="user-password">
-                                                    
+                                                    <label>City</label>
+                                                    <input type="text" name="city">
+                                                    <label>State</label>
+                                                    <input type="text" name="state">
+                                                    <label>Address Line</label>
+                                                    <input type="text" name="address">
+                                                    <label>PIN </label>
+                                                    <input type="text" name="pincode">
+
 
 
                                                     <div class="save_button primary_btn default_button">
-                                                        <button type="submit">Save</button>
+                                                        <button type="submit">Update</button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -216,6 +370,7 @@
             <!-- Main JS -->
             <script src="assets/js/main.js"></script>
             <!-- loging out pop up -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script>
                 document.getElementById("logoutLink").addEventListener("click", function (event) {
                     event.preventDefault(); // Prevent the default link behavior
@@ -244,6 +399,8 @@
 
 
             </script>
+
+            <!-- address edit -->
 
 
 

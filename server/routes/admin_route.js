@@ -7,6 +7,7 @@ const adminController = require("../controller/adminController")
 const auth = require("../../middleware/adminAuth.js")
 const productController = require("../controller/productController")
 const store = require("../../middleware/multer");
+const orderController = require("../controller/orderController")
 
 const {isLogin,isLogout} = auth
 
@@ -16,8 +17,13 @@ admin_route.get('/admin_sign_in',isLogout, adminController.adminSignin)
 admin_route.post('/admin_signin_post',isLogout,adminController.adminSigninPost)
 admin_route.get('/admin_dashboard',isLogin,adminController.adminDashboard)
 
+admin_route.get('/viewOrders',isLogin,adminController.viewOrders)
+admin_route.get('/orderDetails',isLogin,orderController.orderDetails)
+admin_route.post('/updateOrder',isLogin, orderController.updateOrder)
+
 admin_route.get('/customers',isLogin,adminController.viewCustomers)
-admin_route.get("/blockUser/:id",isLogin, adminController.blockUser);
+admin_route.post("/blockUser",isLogin, adminController.blockUser);
+admin_route.post("/unblockUser",isLogin, adminController.unblockUser);
 
 
 admin_route.get('/add_product',isLogin,productController.addProduct)
@@ -34,6 +40,9 @@ admin_route.get('/viewCategory',isLogin,productController.viewCategory)
 admin_route.get('/updateCategory/:id',isLogin,productController.updateCategory)
 admin_route.post('/updateCategoryPost/:id',store.single("category_image"),isLogin,productController.updateCategoryPost)
 admin_route.get('/deleteCategory/:id',isLogin,productController.deleteCategory)
+
+admin_route.get('/admin_logout',isLogin,adminController.adminLogout)
+
 
 
 

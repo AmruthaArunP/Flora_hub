@@ -687,11 +687,12 @@
                       <div class="dropdown-menu bg-pastel-purple" aria-labelledby="dropdownMenuButton">
                         <% if (customer.is_blocked) { %>
 
-                        <a class="dropdown-item text-success" href="/blockUser/<%= customer.id %>">Unblock</a>
-
+                        <!-- <a class="dropdown-item text-success" href="/blockUser/<%= customer.id %>">Unblock</a> -->
+                        <button class="dropdown-item text-success" onclick="unBlock('<%= customer.id %>')">Unblock</button>
                         <% } else { %>
-                          <a class="dropdown-item text-danger " href="/blockUser/<%= customer.id %>">Block</a>
-
+                          <!-- <a class="dropdown-item text-danger " href="/blockUser/<%= customer.id %>">Block</a> -->
+                          <button class="dropdown-item text-success" onclick="blockUser('<%= customer.id %>')">Block</button>
+                        
                           <% } %>
                       </div>
 
@@ -754,6 +755,8 @@
 
   <!-- Main Theme file -->
   <script src="/assets_admin/js/theme.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.all.min.js"></script>
+  <script src="/assets_admin/js/admin.js"></script>
 
 
   <script type="text/javascript">

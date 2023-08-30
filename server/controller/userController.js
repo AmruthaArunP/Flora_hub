@@ -3,6 +3,9 @@ const helperFunction = require("../../helperFunctions/userHelper");
 const bcrypt = require("bcrypt");
 const Category = require("../model/categoryModel");
 const productData = require("../model/product");
+const Address = require("../model/address");
+const Order = require("../model/order");
+
 let generatedOtp;
 let user_name;
 let emailId;
@@ -312,24 +315,57 @@ const user_login_post = async (req, res) => {
 
 
 
-const my_account =async (req, res) => {
+const my_account = async (req, res) => {
   try {
-    if(req.session.user){
-    const userDatas = req.session.user;
-  
-    const categoryData = await Category.find({ is_blocked: false });
-  
-    // const productDatas = await productData.find();
-    const profilename=userDatas.user_name
-    res.render("my_account", { userDatas, categoryData, profilename,message:"true"});
-  }else{
-    res.render("my_account", { profilename,message:"false"});
+    if (req.session.user) {
+      const userDatas = req.session.user;
+      const userId = userDatas._id;
+      const categoryData = await Category.find({ is_blocked: false });
+      const addressData = await Address.find({ userId: userId });
+      const orderData = await Order.find({ userId: userId });
+      const productDatas = await productData.find();
 
-  }
-} catch (error) {
+      //transactions data here
+      req.session.checkout = true;
+      const userMeta = await userData.findById(userId);
+     // const walletBalance = userMeta.wallet.balance;
+      const user = await userData
+        .findOne({ _id: userId })
+        .populate({ path: "cart" })
+        .populate({ path: "cart.product", model: "productCollection" });
+      const profilename = userMeta.user_name;
+
+      const cart = user.cart;
+      let subTotal = 0;
+
+      cart.forEach((val) => {
+        val.total = val.product.price * val.quantity;
+        subTotal += val.total;
+      });
+      res.render("my_account", {
+        userDatas,
+        userMeta,
+       // walletBalance,
+        orderData,
+        categoryData,
+        cart,
+        addressData,
+        profilename,
+        message: "true",
+        productDatas,
+        subTotal,
+      });
+    } else {
+      res.render("my_account", {
+        cart,
+        addressData,
+        profilename,
+        message: "false",
+      });
+    }
+  } catch (error) {
     console.log(error.message);
-}
- 
+  }
 };
 
 const shop = async (req, res) => {
@@ -364,6 +400,66 @@ const user_logout = (req, res) => {
   }
 };
 
+const productDetails = async (req, res) => {
+const productId = req.params.id;
+console.log(productId);
+try {
+  const userData = req.session.user
+  const product = await productData.findById(productId);
+  const image = product.imageUrl
+  res.render("productDetails", { product, userData, cartId: null, image, message: "" });
+} catch (error) {
+  res.status(500).send(error.message);
+}
+};
+const addNewAddress = async (req, res) => {
+  try {
+    const userData = req.session.user;
+    const userId = userData._id;
+
+    const address = new Address({
+      userId: userId,
+      name: req.body.name,
+      mobile: req.body.mobile,
+      addressLine: req.body.addressLine,
+      city: req.body.city,
+      email: req.body.email,
+      state: req.body.state,
+      pincode: req.body.pincode,
+      is_default: false,
+    });
+    console.log(`ship adrs..${address}`);
+
+    await address.save();
+    res.status(200).send();
+  } catch (error) {
+    res.status(500).send();
+    console.log(error.message);
+  }
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    const updatedProfile = await userData.findByIdAndUpdate(
+      userId,
+      {
+        user_name: req.body.user_name,
+        phone: req.body.phone,
+        address: req.body.address,
+        email: req.body.email,
+      },
+      { new: true }
+    );
+
+  } catch (error) {
+    console.log(error);
+
+  }
+};
+
+
+
 module.exports={
     index,
     user_register,
@@ -381,5 +477,8 @@ module.exports={
     verifyForgotEmail,
     my_account,
     shop,
-    user_logout
+    user_logout,
+    productDetails,
+    addNewAddress,
+    updateProfile
 }

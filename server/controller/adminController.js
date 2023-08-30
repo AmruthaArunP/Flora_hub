@@ -1,5 +1,13 @@
 // const customerData = require("../models/mongo")
 const customerData = require("../model/user_register");
+const Order = require("../model/order");
+const productData = require("../model/product");
+const userData = require("../model/user_register");
+const cloudinary = require("../../config/cloudinary")
+const Address = require("../model/address");
+const Category = require("../model/categoryModel");
+
+
 
 const adminSignin = (req, res) => {
     if (req.session.admin) {
@@ -22,7 +30,7 @@ const adminSigninPost = (req, res) => {
 const adminDashboard = (req, res) => {
     res.render('admin_dashboard');
 };
-   //View Customers
+   /////////////////////////////////View Customers///////////////////////
 
 const viewCustomers = async (req, res) => {
     try {
@@ -34,21 +42,56 @@ const viewCustomers = async (req, res) => {
     }
 };
 
-//user block
+///////////////////////user block//////////////////////////////////////////////
 
 const blockUser = async (req, res) => {
- 
     try {
-        const id = req.params.id;
-        console.lo
-
+        const id = req.query.customerid;
+        console.log(id);
         const blockUser = await customerData.findById(id);
-
         await customerData.findByIdAndUpdate(id, { $set: { is_blocked: !blockUser.is_blocked } }, { new: true });
-
-        res.redirect("/customers");
+        // res.redirect("/customers");
+         res.json({ message: "success" });
     } catch (error) {
         console.log(error);
+    }
+};
+
+const unblockUser = async (req, res) => {
+    try {
+        const id = req.query.customerid;
+        console.log(id);
+        const blockUser = await customerData.findById(id);
+        await customerData.findByIdAndUpdate(id, { $set: { is_blocked: blockUser.is_blocked } }, { new: true });
+        res.json({ message: "success" });
+    } catch (error) {
+        console.log(error);
+    }
+};
+///////////////Log_out//////////////////////////////////////////
+
+const adminLogout = (req, res) => {
+    delete req.session.admin;
+    res.redirect("/admin_sign_in"); // Redirect to the login page after logout
+};
+
+/////////////////////////ViewOrders///////////////////////////
+
+const viewOrders = async (req, res) => {
+    try {
+        const ordersPerPage = 5;
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * ordersPerPage;
+        let orderData = await Order.find().sort({ date: -1 }).skip(skip).limit(ordersPerPage);
+        const user = await userData.findOne().populate({ path: 'cart' }).populate({ path: 'cart.product', model: 'productCollection' });
+
+        const totalCount = await Order.countDocuments();
+        const totalPages = Math.ceil(totalCount / ordersPerPage);
+
+        res.render("viewOrders", { user, orderData,currentPage: page,totalPages,message: "true" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
     }
 };
 
@@ -56,11 +99,6 @@ const blockUser = async (req, res) => {
 
 
 
-
-const adminLogout = (req, res) => {
-    delete req.session.admin;
-    res.redirect("/admin_sign_in"); // Redirect to the login page after logout
-};
 
 
 
@@ -75,7 +113,9 @@ module.exports = {
     adminDashboard,
     adminLogout,
     viewCustomers,
-    blockUser
-};
+    blockUser,
+    unblockUser,
+    viewOrders
+    };
 
 

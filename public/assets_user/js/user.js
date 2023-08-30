@@ -6,14 +6,13 @@ const addToCart = async (productId) => {
     try {
     event.preventDefault();
         const addToCartButton = document.getElementById("addToCartBtn");
+        const newButton = document.querySelectorAll("#addToCartBtn")
         let quantity = document.getElementById(productId).value;
         
         if(quantity === null){
             quantity = 1
         }
-        
-        
-
+              
         const response = await fetch(`/addToCart?id=${productId}&quantity=${quantity}`, {
 
             method: "GET",
@@ -23,9 +22,6 @@ const addToCart = async (productId) => {
         });
         
         let data = await response.json();
-
-
-
         if (data.message === "Item already in cart!!") {
             Swal.fire({
                 position: "center",
@@ -76,6 +72,54 @@ function calculateSubtotal() {
       element.textContent = `${subtotal}/-`;
     });
   }
+
+  const totalPrice = async (id, act, stock) => {
+   
+    const elem = document.getElementById(id);
+
+    if (act == "inc") elem.value ? (elem.value = Number(elem.value) + 1) : "";
+    else if (act == "dec") elem.value > 1 ? (elem.value = Number(elem.value) - 1) : "";
+
+    let subTotal = 0;
+    let datas = [];
+    let length = document.getElementsByName("productTotal").length;
+   
+
+    for (let i = 0; i < length; i++) {
+        
+        const quantity = parseFloat(document.getElementsByName("num-product")[i].value);
+   
+        
+        const price = parseFloat(document.getElementsByName("productprice")[i].value);
+       
+
+        const productTotal = isNaN(quantity) || isNaN(price) ? 0 : quantity * price;
+
+
+        document.getElementsByName("productTotal")[i].innerText = "₹ " + productTotal.toFixed();
+        subTotal += productTotal;
+        
+        
+
+        datas.push({
+            id: document.getElementsByName("productId")[i].value,
+            quantity: Number(document.getElementsByName("num-product")[i].value),
+        });
+    }
+    // console.log(document.getElementById("subTotal")); 
+
+    document.getElementById("subTotal").innerText = "₹ " + subTotal.toFixed();
+ 
+    let data = await fetch("/cartUpdation", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            datas,
+        }),
+    });
+};
   
 
 

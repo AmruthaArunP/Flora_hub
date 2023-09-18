@@ -1,7 +1,7 @@
 const userData = require("../model/user_register");
 const productData = require("../model/product");
-// const Category = require("../model/category");
 const Category = require("../model/categoryModel");
+const Coupon = require("../model/couponModel")
 
 
 
@@ -46,32 +46,40 @@ const addToCart = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
 const viewCart = async (req, res) => {
     try {
         if(req.session.user){
         req.session.checkout = true
         const userDatas = req.session.user;
-
+        const productId = req.query.id;
+         
         const userId = userDatas._id
         const categoryData = await Category.find({ is_blocked: false });
+       
+        const currentDate = new Date();
 
-        const user = await userData.findOne({ _id: userId }).populate({path: 'cart'}).populate({path: 'cart.product', model: 'productCollection'});
+        const coupons = await Coupon.find({status: true,expiryDate: { $gt: currentDate }});
+
+        console.log("coupon:",coupons);
+        
+        const user = await userData.findOne({ _id: userId }).populate({path: 'cart'}).populate({path: 'cart.product', model: 'productCollection', populate: {path: 'categoryID', model: 'category'}});
         const cart = user.cart;
         let subTotal = 0;
 
-        cart.forEach((val) => {
-            val.total = val.product.price * val.quantity;
-            subTotal += val.total;
-        });
+
+        // cart.forEach(async (val) => {
+        //     const categoryID = await Category.findById(val.product.categoryID);
+        //     subTotal += (val.product.price - (val.product.price * (categoryID.offer / 100))) * val.quantity;
+            
+        // });
        
         if (cart.length === 0) {
             res.render("emptyCart", { userDatas, categoryData ,loggedIn:true});
         } else {
-            res.render("viewCart", { userDatas, cart, subTotal, categoryData,loggedIn:true });
+            res.render("viewCart", { userDatas, coupons,cart, subTotal, categoryData,loggedIn:true, filtertype:null,keyword:null,});
         }
     }else{
-        res.render("viewCart", { userDatas, cart, subTotal, categoryData,loggedIn:true });
+        res.render("viewCart", { userDatas,coupons, cart, subTotal, filtertype:null,keyword:null, categoryData,loggedIn:true });
 
     }
 
@@ -93,7 +101,7 @@ const updateCart = async (req, res) => {
         });
 
         await userData.updateOne({ _id: userDatas._id }, { $set: { cart: data[0].cart } });
-        res.status(200).send();
+        res.status(200).end();
     } catch (error) {
         console.log(error.message);
     }
@@ -116,6 +124,32 @@ const removeCart = async (req, res) => {
     }
 };
 
+const checkStock = async (req, res) => {
+    try {
+        const userData = req.session.user;
+        const userId = userData._id;
+
+        const userCart = await User.findOne({ _id: userId }).populate("cart.product").lean();
+        const cart = userCart.cart;
+
+        let stock = [];
+
+        cart.forEach((element) => {
+            if (element.product.stock - element.quantity <= 0) {
+                stock.push(element.product);
+            }
+        });
+
+        if (stock.length > 0) {
+            res.json(stock);
+        } else {
+            res.json({ message: "In stock" });
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+
 
 
 
@@ -124,5 +158,6 @@ module.exports = {
     addToCart,
     viewCart,
     updateCart,
-    removeCart
+    removeCart,
+    checkStock
 }

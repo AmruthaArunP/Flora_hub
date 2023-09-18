@@ -5,6 +5,7 @@ const Category = require("../model/categoryModel");
 const productData = require("../model/product");
 const Address = require("../model/address");
 const Order = require("../model/order");
+const Banner = require("../model/bannerModel");
 
 let generatedOtp;
 let user_name;
@@ -17,28 +18,84 @@ let forgotPasswordOtp
 
 const index = async (req, res) => {
   try {
-    const productDatas = await productData.find();
-    const logged = req.session.user
+    let keyword;
+    let query={}
+    // Search key retaining search place
+    if (req.query.keyword && req.query.keyword !== 'false') {
+      keyword = req.query.keyword;
+      query.product_name = new RegExp(keyword, 'i');
+      } else {
+      keyword = false;
+      }
     
-    if(req.session.user){
-      const userDatas = req.session.user
-      
-    // req.session.checkout = true
-
-    const userId = userDatas._id
+    const productDatas = await productData.find().populate({path: 'categoryID', model: 'category'});
+    const logged = req.session.user;
+    const bannerData = await Banner.find({ active: true });
     const categoryData = await Category.find({ is_blocked: false });
+     console.log("product data:",productDatas);
+    if (req.session.user) {
+      const userDatas = req.session.user;
+      let cartId = null;
+      req.session.checkout = true;
 
-      res.render("index", { productDatas,userDatas, message: "true"});
-    }else{
-      res.render("index",{productDatas,logged ,message:"false"});
+      const userId = userDatas._id;
+     const  userMeta = await userData.findById(userId);
+      const wishlistLength = userMeta.wishlist.length;
 
+      const user = await userData
+        .findOne({ _id: userId })
+        .populate({ path: "cart" })
+        .populate({ path: "cart.product", model: "productCollection" });
+      const cart = user.cart;
+      let subTotal = 0;
+
+      if (cart.length == 0) {
+        return res.render("index", {
+          productDatas,
+          bannerData,
+          logged,
+          cartId,
+          keyword,
+          filtertype:null,
+          message: "false",
+        });
+      } else {
+        cart.forEach((val) => {
+          val.total = val.product.price * val.quantity;
+          subTotal += val.total;
+        });
+        res.render("index", {
+          productDatas,
+          bannerData,
+          userDatas,
+          cart,
+          cartId,
+          wishlistLength,
+          subTotal,
+          filtertype:null,
+          categoryData,
+          keyword,
+          message: "true",
+        });
+      }
+    } else {
+      res.render("index", {
+        productDatas,
+        bannerData,
+        categoryData,
+        cartId:null,
+        logged,
+        keyword,
+        filtertype:null,
+        message: "false",
+      });
     }
-   
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
+
 
 //user Registration
 const user_register = (req, res) => {
@@ -264,60 +321,73 @@ const updatePassword = async (req, res) => {
        //login get
 
    const user_login = (req, res) => {
-    
+    let keyword;
+    let query={}
+    // Search key retaining search place
+    if (req.query.keyword && req.query.keyword !== 'false') {
+      keyword = req.query.keyword;
+      query.product_name = new RegExp(keyword, 'i');
+      } else {
+      keyword = false;
+      }
     if (req.session.user) {
       res.redirect("/my_account");
     } else {
-      res.render("user_login", { message: "" });
+      res.render("user_login", { message: "",keyword:null,filtertype:null });
     }
   };
 
 
 
   // User Login Post
-const user_login_post = async (req, res) => {
-  try {
-    const { user_name, password } = req.body;
-    console.log(user_name)
-    if (!user_name || !password) {
-      res.render("user_login", {
-        message: "Username and Password can't be empty",
-      });
-    }
-    let email = user_name;
-    let exist = await userData.findOne({ email: email });
-    console.log(exist);
-    if (exist) {
-      if (exist.is_blocked) {
-        res.render("user_login", { message: "You account is blocked !!" });
-
+  const user_login_post = async (req, res) => {
+    try {
+      const { user_name, password } = req.body;
+      if (!user_name || !password) {
+        res.render("user_login", {
+          message: "Username and Password can't be empty",
+        });
       }
-
-
-      const decodedPassword = await bcrypt.compare(password, exist.password);
-      const userStatus = exist.is_blocked;
-
-      if (decodedPassword && userStatus == false) {
-        req.session.user = exist;
-        console.log(11);
-        res.render("index");
-
+      let email = user_name;
+      let exist = await userData.findOne({ email: email });
+  
+      if (exist) {
+        if (exist.is_blocked) {
+          res.render("user_login", { message: "You account is blocked !!" });
+        }
+  
+        const decodedPassword = await bcrypt.compare(password, exist.password);
+        const userStatus = exist.is_blocked;
+  
+        if (decodedPassword && userStatus == false) {
+          req.session.user = exist;
+          res.redirect("index");
+        } else {
+          res.render("user_login", { message: "The password is incorrect" });
+        }
       } else {
-        res.render("user_login", { message: "The password is incorrect" });
+        res.render("user_login", { message: "User not found please signup" });
       }
-    } else {
-      res.render("user_login", { message: "User not found please signup" });
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
+  };
+  
 
 
 
 const my_account = async (req, res) => {
   try {
     if (req.session.user) {
+      let keyword;
+      let query={}
+      // Search key retaining search place
+      if (req.query.keyword && req.query.keyword !== 'false') {
+        keyword = req.query.keyword;
+        query.product_name = new RegExp(keyword, 'i');
+        } else {
+        keyword = false;
+        }
       const userDatas = req.session.user;
       const userId = userDatas._id;
       const categoryData = await Category.find({ is_blocked: false });
@@ -328,7 +398,7 @@ const my_account = async (req, res) => {
       //transactions data here
       req.session.checkout = true;
       const userMeta = await userData.findById(userId);
-     // const walletBalance = userMeta.wallet.balance;
+      const walletBalance = userMeta.wallet.balance;
       const user = await userData
         .findOne({ _id: userId })
         .populate({ path: "cart" })
@@ -345,7 +415,7 @@ const my_account = async (req, res) => {
       res.render("my_account", {
         userDatas,
         userMeta,
-       // walletBalance,
+        walletBalance,
         orderData,
         categoryData,
         cart,
@@ -354,12 +424,17 @@ const my_account = async (req, res) => {
         message: "true",
         productDatas,
         subTotal,
+        keyword,
+        filtertype:null,
+        wishlistLength:null,
       });
     } else {
       res.render("my_account", {
         cart,
         addressData,
         profilename,
+        keyword,
+        filtertype:null,
         message: "false",
       });
     }
@@ -368,23 +443,142 @@ const my_account = async (req, res) => {
   }
 };
 
+// const shop = async (req, res) => {
+//   try {
+//     const filtertype = req.query.filtertype
+//     let productDatas,keyword;
+//     let query={}
+//     // Search key retaining search place
+//     if (req.query.keyword && req.query.keyword !== 'false') {
+//       keyword = req.query.keyword;
+//       query.product_name = new RegExp(keyword, 'i');
+//       } else {
+//       keyword = false;
+//       }
+
+
+//     // Search codes here
+//     const search = req.query.keyword;
+//     if (search) {
+//       productDatas = await productData.find({
+//         $or: [
+//           { product_name: { $regex: ".*" + search + ".*", $options: "i" } },
+//           { category: { $regex: ".*" + search + ".*", $options: "i" } },
+//         ],
+//       });
+//     } else if(filtertype){
+//       productDatas = await productData.find({ category: filtertype });
+//     }
+//     else {
+//       productDatas = await productData.find().populate({path: 'categoryID', model: 'category'});
+//     } 
+    
+//     // category filter
+//     if (req.session.user) {
+//       req.session.checkout = true;
+//       const userDatas = req.session.user;
+//       const userId = userDatas._id;
+//       const filtertype= req.query.filtertype
+//       // walletBalance=userDatas.wallet.balance
+//       const categoryData = await Category.find({ is_blocked: false });
+//       const user = await userData
+//         .findOne({ _id: userId })
+//         .populate({ path: "cart" })
+//         .populate({ path: "cart.product", model: "productCollection" });
+//       const cart = user.cart;
+//       let subTotal = 0;
+
+     
+//       res.render("shop", {productDatas,userDatas,cart,subTotal,categoryData,filtertype,wishlistLength:null,message: "true",keyword});
+//     } else {
+//       res.render("shop", { productDatas,filtertype, message: "false",keyword });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// };
+
 const shop = async (req, res) => {
   try {
-    const productDatas = await productData.find();
-    const logged = req.session.user
-        if(req.session.user){
-      const userDatas = req.session.user
-      res.render("shop", { productDatas,userDatas, message: "true"});
+    const filtertype = req.query.filtertype;
+    let productDatas, keyword;
+    let query = {};
+
+    // Retaining search key for the search input
+    if (req.query.keyword && req.query.keyword !== 'false') {
+      keyword = req.query.keyword;
+      query.product_name = new RegExp(keyword, 'i');
+    } else {
+      keyword = false;
     }
-    else{
-      res.render("shop",{productDatas,logged ,message:"false"});
+
+    // Initialize the base query
+    if (filtertype) {
+      query.category = filtertype;
     }
+
+    // Search codes here
+    const search = req.query.keyword;
+
+    if (search) {
+      const searchQuery = {
+        $or: [
+          { product_name: { $regex: ".*" + search + ".*", $options: "i" } },
+          { category: { $regex: ".*" + search + ".*", $options: "i" } },
+        ],
+      };
+
+      // If a category filter is applied, combine it with the search query
+      if (filtertype) {
+        query = {
+          $and: [query, searchQuery],
+        };
+      } else {
+        // Otherwise, use only the search query
+        query = searchQuery;
+      }
+
+      productDatas = await productData.find(query);
+    } else if (filtertype) {
+      // If no search query, but a category filter is applied, use the category filter
+      productDatas = await productData.find(query);
+    } else {
+      // If no search or filter, retrieve all products
+      productDatas = await productData.find().populate({ path: 'categoryID', model: 'category' });
+    }
+
+    // category filter
+    if (req.session.user) {
+      req.session.checkout = true;
+      const userDatas = req.session.user;
+      const userId = userDatas._id;
+      const filtertype= req.query.filtertype
+      // walletBalance=userDatas.wallet.balance
+      const categoryData = await Category.find({ is_blocked: false });
+      const user = await userData
+        .findOne({ _id: userId })
+        .populate({ path: "cart" })
+        .populate({ path: "cart.product", model: "productCollection" });
+      const cart = user.cart;
+      let subTotal = 0;
+
+     
+      res.render("shop", {productDatas,userDatas,cart,subTotal,categoryData,filtertype,wishlistLength:null,message: "true",keyword});
+    } else {
+      res.render("shop", { productDatas,filtertype, message: "false",keyword });
+    }
+
 
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
+
+
+
+
 
 const user_logout = (req, res) => {
   try {
@@ -400,18 +594,92 @@ const user_logout = (req, res) => {
   }
 };
 
+// const productDetails = async (req, res) => {
+// const productId = req.params.id;
+// console.log(productId);
+// try {
+//   const userData = req.session.user
+//   const product = await productData.findById(productId);
+//   const image = product.imageUrl
+//   res.render("productDetails", { product, userData, cartId: null, image, message: "" });
+// } catch (error) {
+//   res.status(500).send(error.message);
+// }
+// };
+
 const productDetails = async (req, res) => {
-const productId = req.params.id;
-console.log(productId);
-try {
-  const userData = req.session.user
-  const product = await productData.findById(productId);
-  const image = product.imageUrl
-  res.render("productDetails", { product, userData, cartId: null, image, message: "" });
-} catch (error) {
-  res.status(500).send(error.message);
-}
+
+
+  try {
+
+    const productId = req.query.id;
+    const productDatas = await productData.find();
+    const logged = req.session.user;
+    const userDatas = req.session.user;
+    const product = await productData.findById(productId).populate({path: 'categoryID', model: 'category'});;
+    const image = product.imageUrl;
+
+
+    if (userDatas) {
+
+
+      req.session.checkout = true;
+
+      const userId = userDatas._id;
+      // walletBalance = userDatas.wallet.balance
+      const categoryData = await Category.find({ is_blocked: false });
+
+      const user = await userData
+        .findOne({ _id: userId })
+        .populate({ path: "cart" })
+        .populate({ path: "cart.product", model: "productCollection" });
+      const cart = user.cart;
+      let subTotal = 0;
+
+      cart.forEach((val) => {
+        val.total = val.product.price * val.quantity;
+        subTotal += val.total;
+      });
+
+
+
+
+      res.render("productDetails", {
+        product,
+        userDatas,
+        userData:null,
+        image,
+        cartId: null,
+        wishlistLength:null,
+        productDatas,
+        cart,
+        subTotal,
+        categoryData,
+        filtertype:null,
+        keyword:null,
+        message: "true",
+      });
+    } else {
+      res.render("productDetails", {
+        product,
+        userDatas,
+        cartId: null,
+        wishlistLength:null,
+        filtertype:null,
+        keyword:null,
+        image,
+        message: "",
+        productDatas, logged, message: "false"
+
+      });
+    }
+
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 };
+
+
 const addNewAddress = async (req, res) => {
   try {
     const userData = req.session.user;
@@ -458,6 +726,30 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const userOrderDetails = async (req, res) => {
+  try {
+    const orderId = req.query.orderId;
+    const user = req.session.user;
+    const orderDetails = await Order.findById(orderId);
+    const orderProductData = orderDetails.product;
+    const addressId = orderDetails.address;
+    const walletBalance = user.wallet.balance;
+    const addressData = await Address.findById(addressId);
+
+    res.render("userOrderDetails", {
+      orderDetails,
+      orderProductData,
+      addressData,
+      currentDate:null,
+      returnEndDate:null,
+      walletBalance,
+      message: "",
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
 
 
 module.exports={
@@ -480,5 +772,6 @@ module.exports={
     user_logout,
     productDetails,
     addNewAddress,
-    updateProfile
+    updateProfile,
+    userOrderDetails
 }

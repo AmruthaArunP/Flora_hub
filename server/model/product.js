@@ -5,20 +5,25 @@ var schema = new mongoose.Schema({
    
     product_name: {
         type: String,
-        require: true,
+        required: true,
         
     },
     product_details: {
         type: String,
-        require: true
+        required: true
     },
     category: {
         type: String,
-        require: true
+        required: true
+    },
+    categoryID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'category',
+        required: true
     },
     price: {
         type: Number,
-        require: true
+        required: true
     },
     imageUrl:[{
         public_id:{

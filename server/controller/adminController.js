@@ -6,6 +6,7 @@ const userData = require("../model/user_register");
 const cloudinary = require("../../config/cloudinary")
 const Address = require("../model/address");
 const Category = require("../model/categoryModel");
+require('dotenv').config();
 
 
 
@@ -27,9 +28,9 @@ const adminSigninPost = (req, res) => {
     }
 };
 
-const adminDashboard = (req, res) => {
-    res.render('admin_dashboard');
-};
+
+
+
    /////////////////////////////////View Customers///////////////////////
 
 const viewCustomers = async (req, res) => {
@@ -110,7 +111,7 @@ const viewOrders = async (req, res) => {
 module.exports = {
     adminSignin,
     adminSigninPost,
-    adminDashboard,
+    
     adminLogout,
     viewCustomers,
     blockUser,

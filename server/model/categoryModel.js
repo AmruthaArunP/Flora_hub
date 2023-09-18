@@ -23,6 +23,10 @@ const categorySchema = new mongoose.Schema({
     is_blocked:{
         type: Boolean,
         default: false
+    },
+    offer: {
+        type: Number,
+        default: 0
     }
 })
 

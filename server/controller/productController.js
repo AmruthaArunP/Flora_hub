@@ -6,14 +6,15 @@ const cloudinary = require("../../config/cloudinary");
 
 
 
+
 require("dotenv").config();
 
 
 
 const addProduct = async (req, res) => {
   try {
-    const data = await Category.find();
-    res.render("add_product", { data });
+    const categorydata = await Category.find();
+    res.render("add_product", { categorydata });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
@@ -21,8 +22,9 @@ const addProduct = async (req, res) => {
 };
 
 const addProductPost = async (req, res) => {
+  const categorydata = await Category.find();
   const { product_name } = req.body;
-    try {
+   try {
     const files = req.files;
     const productImages = [];
     for (const file of files) {
@@ -39,18 +41,22 @@ const addProductPost = async (req, res) => {
     }
     const exist = await productData.findOne({ product_name: product_name });
     if (exist) {
-      res.render("add_product", { message: "The product already exists" });
+      res.render("add_product", { message: "The product already exists", categorydata});
     } else {
+      const category = await Category.findOne({category: req.body.category});
       const product = new productData({
         product_name: req.body.product_name,
         product_details: req.body.product_details,
         category: req.body.category,
         price: req.body.price,
+        stock: req.body.quantity,
+        categoryID: category._id,
         imageUrl:productImages
       });
 
+
       await product.save();
-       
+
       res.redirect("/view_products");
     }
   } catch (error) {
@@ -80,37 +86,39 @@ const addProductPost = async (req, res) => {
 
   const updateProduct = async (req, res) => {
     const productId = req.params.id;
-  
+   
     try {
       const product = await productData.findById(productId);
-  
-  
+      const categoryDatas = await Category.find();
   
       if (!product) {
         return res.render("update_product", { message: "Product not found" });
       }
   
-      res.render("update_product", { product });
+      res.render("update_product", { product, categoryDatas});
     } catch (error) {
       res.status(500).send(error.message);
     }
   };
-
   const updateProductPost = async (req, res) => {
-    const { product_name, product_details, category, price } = req.body;
+    const { product_name, product_details, category, price, quantity } = req.body;
     const id = req.params.id;
   
     try {
       const product = await productData.findById(id);
       if (!product) {
-        return res.render("update_product", { message: "Product not found" });
+        return res.render("update_product", { message: "Product not found",data:null });
       }
+
+      const categoryID = await Category.findOne({category: req.body.category});
   
       product.product_name = product_name;
       product.product_details = product_details;
       product.category = category;
+      product.categoryID = categoryID._id;
       product.price = price;
-  
+      product.stock = quantity,
+      
       await product.save();
   
       res.redirect("/view_products");
@@ -118,6 +126,7 @@ const addProductPost = async (req, res) => {
       res.status(500).send(error.message);
     }
   };
+  
 
   //category
 
@@ -128,7 +137,7 @@ const addProductPost = async (req, res) => {
   const addCategoryPost = async (req, res) => {
     const categoryName = req.body.category_name;
     const categoryDescription = req.body.category_details;
-  
+    const categoryOffer = req.body.categoryDiscount;
     const image = req.file;
     const lowerCategoryName = categoryName.toLowerCase();
     try {
@@ -146,6 +155,7 @@ const addProductPost = async (req, res) => {
             url: result.secure_url,
           },
           description: categoryDescription,
+          offer:categoryOffer
         });
   
         await category.save();
@@ -203,6 +213,7 @@ const addProductPost = async (req, res) => {
         const categoryId = req.params.id;
         const categoryName = req.body.category_name;
         const categoryDescription = req.body.category_details;
+        const categoryOffer = req.body.categoryDiscount;
         const newImage = req.file;
 
         const categoryData = await Category.findById(categoryId);
@@ -240,6 +251,8 @@ const addProductPost = async (req, res) => {
                         url: result.secure_url
                     },
                     description: categoryDescription,
+                    offer:categoryOffer
+
                 },
                 { new: true }
             );
@@ -254,6 +267,8 @@ const addProductPost = async (req, res) => {
         console.log(error.message);
     }
 };
+
+
 
 
 
@@ -272,5 +287,6 @@ module.exports = {
     viewCategory,
     updateCategory,
     updateCategoryPost,
-    deleteCategory
+    deleteCategory,
+    
 }

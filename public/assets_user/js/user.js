@@ -4,6 +4,7 @@
 const addToCart = async (productId) => {
 
     try {
+        console.log("add to cart")
     event.preventDefault();
         const addToCartButton = document.getElementById("addToCartBtn");
         const newButton = document.querySelectorAll("#addToCartBtn")
@@ -80,7 +81,7 @@ function calculateSubtotal() {
     if (act == "inc") elem.value ? (elem.value = Number(elem.value) + 1) : "";
     else if (act == "dec") elem.value > 1 ? (elem.value = Number(elem.value) - 1) : "";
 
-    let subTotal = 0;
+    //let subTotal = 0;
     let datas = [];
     let length = document.getElementsByName("productTotal").length;
    
@@ -96,8 +97,8 @@ function calculateSubtotal() {
         const productTotal = isNaN(quantity) || isNaN(price) ? 0 : quantity * price;
 
 
-        document.getElementsByName("productTotal")[i].innerText = "₹ " + productTotal.toFixed();
-        subTotal += productTotal;
+        //document.getElementsByName("productTotal")[i].innerText = "₹ " + productTotal.toFixed();
+        //subTotal += productTotal;
         
         
 
@@ -106,9 +107,9 @@ function calculateSubtotal() {
             quantity: Number(document.getElementsByName("num-product")[i].value),
         });
     }
-    // console.log(document.getElementById("subTotal")); 
+    //console.log(document.getElementById("subTotal")); 
 
-    document.getElementById("subTotal").innerText = "₹ " + subTotal.toFixed();
+    //document.getElementById("subTotal").innerText = "₹ " + subTotal.toFixed();
  
     let data = await fetch("/cartUpdation", {
         method: "POST",
@@ -119,6 +120,9 @@ function calculateSubtotal() {
             datas,
         }),
     });
+    if (data) {
+        window.location.reload();
+    }
 };
   
 

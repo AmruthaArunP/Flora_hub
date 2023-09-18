@@ -8,6 +8,10 @@ const auth = require("../../middleware/adminAuth.js")
 const productController = require("../controller/productController")
 const store = require("../../middleware/multer");
 const orderController = require("../controller/orderController")
+const bannerController = require("../controller/bannerController")
+const couponController = require("../controller/couponController")
+const dashboardController = require("../controller/dashboardController")
+
 
 const {isLogin,isLogout} = auth
 
@@ -15,7 +19,12 @@ const {isLogin,isLogout} = auth
 
 admin_route.get('/admin_sign_in',isLogout, adminController.adminSignin)
 admin_route.post('/admin_signin_post',isLogout,adminController.adminSigninPost)
-admin_route.get('/admin_dashboard',isLogin,adminController.adminDashboard)
+admin_route.get('/admin_dashboard',isLogin, dashboardController.adminDashboard)
+admin_route.get('/chartData', dashboardController.chartData)
+admin_route.get('/getSales', dashboardController.getSales)
+admin_route.post('/downloadSalesReport', dashboardController.downloadSalesReport)
+
+
 
 admin_route.get('/viewOrders',isLogin,adminController.viewOrders)
 admin_route.get('/orderDetails',isLogin,orderController.orderDetails)
@@ -40,6 +49,28 @@ admin_route.get('/viewCategory',isLogin,productController.viewCategory)
 admin_route.get('/updateCategory/:id',isLogin,productController.updateCategory)
 admin_route.post('/updateCategoryPost/:id',store.single("category_image"),isLogin,productController.updateCategoryPost)
 admin_route.get('/deleteCategory/:id',isLogin,productController.deleteCategory)
+
+
+admin_route.get("/banners", isLogin, bannerController.loadBanners)
+admin_route.get("/addBanner", isLogin, bannerController.addBanner)
+admin_route.post('/addBanner', isLogin, store.single('image') , bannerController.addNewBanner)
+admin_route.get('/updateBanner/:id', isLogin, bannerController.updateBanner)
+admin_route.post('/updateBanner/:id', isLogin, store.single('image') , bannerController.updateBannerPost)
+admin_route.get('/bannerStatus/:id', isLogin, bannerController.bannerStatus)
+
+admin_route.get('/viewCoupon', isLogin, couponController.loadCoupons)
+admin_route.get('/addCoupon',isLogin, couponController.loadAddCoupon)
+admin_route.post('/addCoupon', couponController.addCouponPost)
+admin_route.post('/blockCoupon', couponController.blockCoupon)
+admin_route.post('/deleteCoupon', couponController.deleteCoupon)
+
+admin_route.get('/categoryOffer',isLogin, couponController.viewCategoryOffer)
+admin_route.get('/addOffer',isLogin, couponController.loadAddOffer)
+admin_route.post('/addOffer', couponController.addOfferPost)
+
+
+
+
 
 admin_route.get('/admin_logout',isLogin,adminController.adminLogout)
 

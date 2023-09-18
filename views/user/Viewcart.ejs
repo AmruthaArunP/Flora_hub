@@ -1,4 +1,12 @@
 <%-include('_header.ejs') -%>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Show/Hide Details</title>
+<style>
+    #details {
+        display: none;
+    }
+</style>
 
 
 
@@ -88,6 +96,7 @@
                                             </tr>
                                         </thead>
                                         <tbody id="cart-container">
+                                            <% let total = 0; %>
                                             <% cart.forEach((item)=> { %>
                                                 <tr id="row<%= item.product.id %>">
                                                     <input type="hidden" id="product_id<%= item.product.id %>"
@@ -106,7 +115,7 @@
                                                         <%= item.product.product_name %>
                                                     </td>
                                                     <td class="product-price" id="product-price-<%= item.product.id %>">
-                                                        <%= item.product.price %>/-
+                                                        &#x20B9;<%= item.product.price - (item.product.price * (item.product.categoryID.offer / 100)) %>/-
                                                     </td>
                                                     <input type="hidden" name="productId"
                                                         value="<%= item.product._id %>">
@@ -154,7 +163,8 @@
                                                     <td name="productTotal" data-label="Total"
                                                         class="ec-cart-pro-subtotal">
                                                         <span id="total-<%= item.product._id %>">
-                                                            <%= item.total %>
+                                                            &#x20B9; <%= (item.product.price - (item.product.price * (item.product.categoryID.offer / 100))) * item.quantity %>
+                                                            <% total += (item.product.price - (item.product.price * (item.product.categoryID.offer / 100))) * item.quantity %>
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -168,105 +178,54 @@
                             </div>
                         </div>
                     </div>
-                    <div class="coupon_area">
-                        <div class="row">
-                            <div class="col-lg-6 col-md-6">
-
-
-
-                                <!--coupon code area start-->
+                    
+                    <div class="col-lg-6 col-md-6">
+                        <div class="coupon_code right">
+                            <h3>Cart Totals</h3>
+                            <div class="coupon_inner">
                               
-                           
+                                <div class="cart_subtotal ">
+                                    <p>Shipping</p>
+                                    <p class="cart_amount"><span></span> 0.00</p>
+                                </div>
 
-                                <div class="coupon_code left">
-                                    <h3>Coupon</h3>
-                                    <div class="coupon_inner">
-                                        <p>Enter your coupon code if you have one.</p>
+                                <input type="hidden" id="subTotalValue" value="<%= subTotal %>">
 
-                                        <input id="checkout-discount-input" placeholder="Coupon code" required=""
-                                            value="" type="text">
-                                        <br>
-                                        <br>
-                                        <button onclick="validateCoupon()" value="" type="submit">Apply coupon</button>
-                                    </div>
+                                <div class="cart_subtotal">
+                                   <h2><p>Total</p></h2> 
+                                   <h4> <strong class="text-right" id="subTotal">
+                                    &#x20B9;<%=total%>
+                                    </strong></h4>
+
+
+
 
                                 </div>
-                                      <!-- offer notification starts -->
-                                      <table>
-                                        <tr id="couponModel" class="summary-total">
-                                            <td>
-                                                <p id="couponMessage"></p>
-                                            </td>
-                                            <td>
-                                                <p id="couponDiscount"></p>
-                                            </td>
-                                            
-                                            <td>
-                                                <p id="subTotalText"></p>
-                                            </td>
-                                            <td>
-                                                <!-- <p id="subTotal"></p> -->
-                                            </td>
-                                        </tr>
-                                        <br>
-                                    </table>
-                                    <!-- offer notification ends -->
-                               
+                                <!-- <a href="#">Calculate shipping</a> -->
 
-                              
+                                <!-- <div class="cart_subtotal">
+                                    <p>Total</p>
+                                    <input type="hidden" id="subTotalValue" value="<%= subTotal %>">
+
+                                    <h4><strong class="text-right" id="subTotal2">
+                                        <%=subTotal%>/-
+                                    </strong></h4>
 
 
-                                <!--coupon code area end-->
-                            </div>
-
-                            <div class="col-lg-6 col-md-6">
-                                <div class="coupon_code right">
-                                    <h3>Cart Totals</h3>
-                                    <div class="coupon_inner">
-                                      
-                                        <div class="cart_subtotal ">
-                                            <p>Shipping</p>
-                                            <p class="cart_amount"><span></span> 0.00</p>
-                                        </div>
-
-                                        <input type="hidden" id="subTotalValue" value="<%= subTotal %>">
-
-                                        <div class="cart_subtotal">
-                                           <h2><p>Total</p></h2> 
-                                           <h4> <strong class="text-right" id="subTotal">
-                                                <%=subTotal%>/-
-                                            </strong></h4>
-
-
-
-
-                                        </div>
-                                        <!-- <a href="#">Calculate shipping</a> -->
-
-                                        <!-- <div class="cart_subtotal">
-                                            <p>Total</p>
-                                            <input type="hidden" id="subTotalValue" value="<%= subTotal %>">
-
-                                            <h4><strong class="text-right" id="subTotal2">
-                                                <%=subTotal%>/-
-                                            </strong></h4>
-
-
-                                        </div> -->
-                                        <div class="checkout_btn">
-                                            <a href="/checkout">Proceed to Checkout</a>
-                                        </div>
-                                    </div>
+                                </div> -->
+                                <div class="checkout_btn">
+                                    <a href="/checkout">Proceed to Checkout</a>
                                 </div>
                             </div>
                         </div>
                     </div>
+                
 
                 </form>
             </div>
         </div>
         <!--shopping cart area end -->
-
+      
 
         <!--footer area start-->
         <%-include('_footer.ejs') -%>

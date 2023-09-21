@@ -33,6 +33,7 @@ user_route.post("/user_login_post",isLogout, userController.user_login_post)
 
 user_route.get('/index',blockCheck, userController.index)
 user_route.get('/shop',blockCheck, userController.shop)
+user_route.get('/contact', userController.contact)
 user_route.get('/productDetails', userController.productDetails)
 
 

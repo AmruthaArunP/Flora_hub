@@ -593,36 +593,74 @@ const user_logout = (req, res) => {
     console.log(error);
   }
 };
+const contact = async (req, res) => {
+  try {
+    const productDatas = await productData.find();
+    const logged = req.session.user;
+    let keyword;
+    let query={}
+    // Search key retaining search place
+    if (req.query.keyword && req.query.keyword !== 'false') {
+      keyword = req.query.keyword;
+      query.product_name = new RegExp(keyword, 'i');
+      } else {
+      keyword = false;
+      }
+    if (req.session.user) {
+      const userDatas = req.session.user;
 
-// const productDetails = async (req, res) => {
-// const productId = req.params.id;
-// console.log(productId);
-// try {
-//   const userData = req.session.user
-//   const product = await productData.findById(productId);
-//   const image = product.imageUrl
-//   res.render("productDetails", { product, userData, cartId: null, image, message: "" });
-// } catch (error) {
-//   res.status(500).send(error.message);
-// }
-// };
+      req.session.checkout = true;
+
+      const userId = userDatas._id;
+      const  userMeta = await userData.findById(userId);
+      const wishlistLength = userMeta.wishlist.length;
+      console.log("wishlistLength",wishlistLength)
+      walletBalance = userDatas.wallet.balance
+      const categoryData = await Category.find({ is_blocked: false });
+
+      const user = await userData
+        .findOne({ _id: userId })
+        .populate({ path: "cart" })
+        .populate({ path: "cart.product", model: "productCollection" });
+      const cart = user.cart;
+      let subTotal = 0;
+
+      cart.forEach((val) => {
+        val.total = val.product.price * val.quantity;
+        subTotal += val.total;
+      });
+
+      res.render("contact", {
+        productDatas,
+        userDatas,
+        cart,
+        wishlistLength,
+        subTotal,
+        categoryData,
+        message: "true",
+        keyword:null,
+        filtertype:null
+      });
+    } else {
+      res.render("contact", { productDatas, logged, message: "false",keyword:null,filtertype:null });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+
 
 const productDetails = async (req, res) => {
-
-
   try {
-
     const productId = req.query.id;
     const productDatas = await productData.find();
     const logged = req.session.user;
     const userDatas = req.session.user;
     const product = await productData.findById(productId).populate({path: 'categoryID', model: 'category'});;
     const image = product.imageUrl;
-
-
     if (userDatas) {
-
-
       req.session.checkout = true;
 
       const userId = userDatas._id;
@@ -773,5 +811,6 @@ module.exports={
     productDetails,
     addNewAddress,
     updateProfile,
-    userOrderDetails
+    userOrderDetails,
+    contact
 }

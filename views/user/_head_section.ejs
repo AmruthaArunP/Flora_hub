@@ -81,10 +81,12 @@
                         <div class="main_menu menu_position">
                             <nav>
                                 <ul>
-                                    <li><a class="active" id="homeLink" href="/index">home</a></li>
-                                    <li class="mega_items"><a id="shopLink" href="/shop">shop</a></li>
-                                    <li class="mega_items"><a id="contactLink" href="/contact">Contact us</a></li>
-                                    <li class="mega_items"><a id="aboutLink" href="/about">About us</a></li>
+                                    <!-- <li class="mega_items"><a id="shopLink" href="/index" class="active">shop</a></li> -->
+                                   
+                                    <li><a class="mega_items" id="homeLink" href="/index" class="active">home</a></li>
+                                    <li class="mega_items"><a id="shopLink" href="/shop" class="active">shop</a></li>
+                                    <li class="mega_items"><a id="contactLink" href="/contact" class="active">Contact us</a></li>
+                                    <li class="mega_items"><a id="aboutLink" href="/about" class="active">About us</a></li>
                                    
                                 </ul>
                             </nav>
@@ -102,3 +104,22 @@
         </div>
     </div>
 </header>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var currentPath = window.location.pathname;
+
+        // Remove the "active" class from all links
+        var menuLinks = document.querySelectorAll(".main_menu a");
+        menuLinks.forEach(function (link) {
+            link.classList.remove("active");
+        });
+
+        // Add the "active" class to the link corresponding to the current page
+        menuLinks.forEach(function (link) {
+            if (link.getAttribute("href") === currentPath) {
+                link.classList.add("active");
+            }
+        });
+    });
+</script>

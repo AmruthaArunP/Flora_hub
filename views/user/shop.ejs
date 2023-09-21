@@ -126,8 +126,14 @@
                                                         <div class="product_price_rating">
                                                           <h4 class="product_name"><a href="/productDetails/<%= product.id %>"><%= product.product_name %></a></h4>
                                                           <div class="price_box">
+                                                          <% if (product.categoryID.offer) { %>
+
                                                             <span class="current_price">&#x20B9; <%= (product.price - (product.price * (product.categoryID.offer / 100))) %>/-</span>
                                                             <span style="text-decoration: line-through;">&#x20B9; <%= product.price %></span>
+                                                          <% }else{ %>
+                                                            <span >&#x20B9; <%= product.price %></span>
+                                                          <% } %>
+
                                                           </div>
                                                         </div>
                                                       </div>

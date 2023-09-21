@@ -18,7 +18,7 @@ const checkout = async (req, res) => {
             const userDatas = req.session.user;
             const userMeta = await userData.findById(userDatas._id)
             const walletBalance = userMeta.wallet.balance;
-            console.log("walletBalance",walletBalance)
+            console.log("walletBalance*********",walletBalance)
             req.session.checkout = true;
   
             const userId = userDatas._id;

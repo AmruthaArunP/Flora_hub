@@ -23,13 +23,16 @@ const placeOrder = async()=>{
         else if(selectedPayment === "Razorpay"){
             razorpay(selectedPayment)
         }
+        else if(selectedPayment === 'Wallet'){
+            wallet(selectedPayment)
+        }
        
     } catch (error) {
         console.log(error.message);
     }
 }
 
-
+//cash on delivery
 const cashOnDelivery = async(selectedPayment, updatedBalance)=>{
     try {
 
@@ -47,8 +50,8 @@ const cashOnDelivery = async(selectedPayment, updatedBalance)=>{
                 selectedAddress: selectedAddress,
                 selectedPayment: selectedPayment,
                 amount: subTotal,
-                // walletBalance: updatedBalance,
-                // couponData: couponData,
+                walletBalance: updatedBalance,
+                couponData: couponData,
                 
               })
         })
@@ -100,6 +103,52 @@ const razorpay = async (selectedPayment) => {
     } catch (error) {
         console.log(error.message);
     }
+}
+// Wallet
+
+const wallet = async (selectedPayment) => {
+    try {
+
+        const balance = document.getElementById('user').value
+        console.log("bala...........................................................",balance)
+        const subTotal = Number(document.getElementById('subTotalValue').value)
+        console.log("subt",subTotal,balance)
+
+        const insufficientBalanceAlert = document.getElementById('insufficientBalanceAlert');
+
+       
+
+
+        if (balance > subTotal) {
+            const updatedBalance = balance - subTotal
+            console.log("upbal.........:",updatedBalance)
+            cashOnDelivery(selectedPayment, updatedBalance)
+        } else {
+            insufficientBalanceAlert.classList.remove('d-none');
+            insufficientBalanceAlert.classList.add('d-flex');
+        }
+
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+window.addEventListener("load", function () {
+    const insufficientBalanceAlert = document.getElementById("insufficientBalanceAlert");
+    if (insufficientBalanceAlert) {
+        insufficientBalanceAlert.classList.remove("d-flex");
+        insufficientBalanceAlert.classList.add("d-none");
+    }
+});
+
+const closeButton = document.querySelector(".btn-close");
+if (closeButton) {
+    closeButton.addEventListener("click", function () {
+        const insufficientBalanceAlert = document.getElementById("insufficientBalanceAlert");
+        insufficientBalanceAlert.classList.remove("d-flex");
+        insufficientBalanceAlert.classList.add("d-none");
+    });
 }
 
 const cancelOrder = async () => {

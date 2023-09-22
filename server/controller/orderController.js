@@ -89,41 +89,27 @@ const checkout = async (req, res) => {
 
 
 
-  const placeOrder = async (req, res) => {
-    try {
 
+
+  const placeOrder = async (req, res) => {
+
+    try {
+        const coupon =req.body.couponData;
+        const couponData = await Coupon.findOne({ code: coupon });
+        let newTotal;
         const userDatas = req.session.user;
         const walletBalance = userDatas.wallet.balance
         const userId = userDatas._id;
-
         const addressId = req.body.selectedAddress;
         const amount = req.body.amount;
         const paymentMethod = req.body.selectedPayment;
-        const couponData = req.body.couponData;
-
-        const user = await userData
-            .findOne({ _id: userId })
-            .populate("cart.product");
-        // const user = await userData.findOne({ _id: userId }).populate({path: 'cart'}).populate({path: 'cart.product', model: 'productCollection'});
-
+        const user = await userData.findOne({ _id: userId }).populate({path: 'cart'}).populate({path: 'cart.product', model: 'productCollection', populate: {path: 'categoryID', model: 'category'}});
         const userCart = user.cart;
 
         let subTotal = 0;
-        let offerDiscount = 0;
-
-        userCart.forEach((item) => {
-            item.total = item.product.price * item.quantity;
-            subTotal += item.total;
-        });
-
-        userCart.forEach((item) => {
-            if (item.product.oldPrice > 0) {
-                item.offerDiscount =
-                    (item.product.oldPrice - item.product.price) * item.quantity;
-                offerDiscount += item.offerDiscount;
-            }
-        });
-
+        userCart.forEach((item)=> { 
+            subTotal += (item.product.price - (item.product.price * (item.product.categoryID.offer / 100))) * item.quantity;
+        })
         let productDatas = userCart.map((item) => {
             return {
                 id: item.product._id,
@@ -144,17 +130,39 @@ const checkout = async (req, res) => {
             ExpectedDeliveryDate.setDate(ExpectedDeliveryDate.getDate() + 3);
 
             if (couponData) {
+                const discount = couponData.discount;
+                const minDiscount = couponData.minDiscount
+                const maxDiscount = couponData.maxDiscount
+                let discountAmount
+                let maximum
+                const discountValue = Number(discount);
+                const couponDiscount = (subTotal * discountValue) / 100;
+                if (couponDiscount < minDiscount) {
+
+                    res.json("minimum value not met")
+        
+                } else {
+                    if (couponDiscount > maxDiscount) {
+                        discountAmount = maxDiscount
+                        maximum = "maximum"
+                    } else {
+                        discountAmount = couponDiscount
+                    }
+        
+                     newTotal = subTotal - discountAmount;
+                    const couponName = coupon;
+                }
                 const order = new Order({
                     userId: userId,
                     product: productDatas,
                     address: addressId,
                     orderId: orderId,
-                    total: amount,
+                    total: subTotal,
                     ExpectedDeliveryDate: ExpectedDeliveryDate,
-                    offerDiscount: offerDiscount,
+                    offerDiscount: couponDiscount,
                     paymentMethod: paymentMethod,
-                    discountAmount: couponData.discountAmount,
-                    amountAfterDiscount: couponData.newTotal,
+                    discountAmount: couponDiscount,
+                    amountAfterDiscount: newTotal,
                     couponName: couponData.couponName,
                 });
 
@@ -173,7 +181,7 @@ const checkout = async (req, res) => {
                     orderId: orderId,
                     total: subTotal,
                     ExpectedDeliveryDate: ExpectedDeliveryDate,
-                    offerDiscount: offerDiscount,
+                    offerDiscount: 0,
                     paymentMethod: paymentMethod,
                 });
 
@@ -191,9 +199,6 @@ const checkout = async (req, res) => {
                 const stock = product.stock;
 
                 const updatedStock = stock - quantity;
-                // const updatedStockPositive = updatedStock > 0 ? updatedStock : 0;
-
-
                 await productData.findByIdAndUpdate(
                     productId,
                     { $set: { stock: updatedStock, isOnCart: false } },
@@ -258,7 +263,7 @@ const checkout = async (req, res) => {
             }
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 
@@ -304,11 +309,10 @@ const orderDetails = async (req, res) => {
     }
 };
 const updateOrder = async (req, res) => {
+    console.log(req.body);
     try {
-        const orderId = req.query.orderId;
-        const userId = req.session.user._id;
-        const status = req.query.orderStatus;
-        const updatedBalance = req.body.wallet
+        const orderId = req.body.orderId;
+        const status = req.body.status;
 
         if (status === "Delivered") {
             const returnEndDate = new Date();
@@ -338,8 +342,9 @@ const updateOrder = async (req, res) => {
                 },
                 { new: true }
             );
+            const order = await Order.findOne({orderId});
             await userData.findByIdAndUpdate(
-                userId,
+                order.userId,
                 {
                     $set: {
                         'wallet.balance': updatedBalance
@@ -364,7 +369,7 @@ const updateOrder = async (req, res) => {
             message: "Cancelled",
         });
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
   

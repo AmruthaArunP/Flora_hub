@@ -144,6 +144,7 @@
                           <% } %>
               </div>
               <h6 class="mt-3">Change Order Status</h6>
+              <input hidden value="<%=orderDetails.orderId%>" id="order_id_new">
 
               <% if (orderDetails.status==="Pending" ) { %>
                 <select name="orderUpdate" id="orderUpdate-<%= orderDetails._id %>" class="form-select">

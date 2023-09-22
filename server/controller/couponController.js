@@ -1,6 +1,7 @@
 const Coupon = require("../model/couponModel")
 const moment = require("moment");
 const Category = require("../model/categoryModel");
+const userData = require("../model/user_register");
 const Offer = require("../model/offer")
 
 
@@ -123,8 +124,16 @@ const validateCoupon = async (req, res) => {
             const couponUsed = await Coupon.findOne({ _id: couponId, usedBy: { $in: [userId] } });
 
             if (couponUsed) {
-                res.json("already used");
+                return res.json("already used");
             } else {
+                const user = await userData.findOne({ _id: userId }).populate({path: 'cart'}).populate({path: 'cart.product', model: 'productCollection', populate: {path: 'categoryID', model: 'category'}});
+                const cart = user.cart;
+                let subTotal = 0;
+
+                cart.forEach((item)=> { 
+                    subTotal += (item.product.price - (item.product.price * (item.product.categoryID.offer / 100))) * item.quantity;
+                })
+                            
 
                 let discountAmount
                 let maximum

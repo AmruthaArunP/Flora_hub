@@ -118,6 +118,7 @@
  
   /////////////// ORDER UPDATE ////////////////////
   const orderUpdateSelects = document.querySelectorAll('[name="orderUpdate"]')
+  const orderId = document.getElementById('order_id_new').value;
 
   if(orderUpdateSelects){
     orderUpdateSelects.forEach((orderUpdateSelect) => {
@@ -140,13 +141,14 @@
       });
 
       if(result.value){
-        const response = await fetch(`/updateOrder?orderId=${orderId}`,{
+        const response = await fetch(`/updateOrder`,{
           method: 'POST',
           headers:{
             'Content-Type' : "application/json"
           },
           body: JSON.stringify({
-            status: selectedOption
+            status: selectedOption,
+            orderId
           })
         })
       

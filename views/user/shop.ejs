@@ -100,17 +100,18 @@
                                                         </div>
                                                         <div class="action_links">
                                                             <ul>
+                                                                
+                                                               
+                                                                
                                                                 <li class="add_to_cart"><a href="/cart"
-                                                                        title="Add to cart"><i
+                                                                        title="Add to cart"><i  onclick="addToCart('<%=product.id%>')" id="addToCartBtn" 
                                                                             class="icon-shopping-bag"></i></a></li>
+                                                                            
 
                                                                 <li class="wishlist"><a href="/wishlist"
                                                                         title="Add to Wishlist"><i
                                                                             class="icon-heart"></i></a></li>
-                                                                <li class="quick_button"><a href="#"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#modal_box" title="quick view">
-                                                                        <i class="icon-eye"></i></a></li>
+                                                               
                                                             </ul>
                                                         </div>
                                                         <div class="action_links list_action">
@@ -121,6 +122,7 @@
                                                                         <i class="icon-eye"></i></a></li>
                                                             </ul>
                                                         </div>
+                                                        
                                                     </div>
                                                     <div class="product_content grid_content">
                                                         <div class="product_price_rating">
@@ -135,6 +137,7 @@
                                                           <% } %>
 
                                                           </div>
+                                                         
                                                         </div>
                                                       </div>
                                                     <div class="product_content list_content">
@@ -158,7 +161,8 @@
                                                         <div class="action_links list_action_right">
                                                             <ul>
                                                                 <input min="1" max="100" id="<%= product.id %>"
-                                                                    value="1" type="number" hidden>
+                                                                    value="1" type="number" >
+                                                                   
                                                                     <% if (product.stock) { %>
 
                                                                             <% if (product.isOnCart) { %>
@@ -276,7 +280,59 @@
                 function submitForm() {
                     document.getElementById("filterForm").submit();
                 }
+
+               
+const addToCart = async (productId) => {
+
+try {
+    console.log("add to cart")
+event.preventDefault();
+    const addToCartButton = document.getElementById("addToCartBtn");
+    const newButton = document.querySelectorAll("#addToCartBtn")
+    let quantity = document.getElementById(productId).value;
+    
+    if(quantity === null){
+        quantity = 1
+    }
+          
+    const response = await fetch(`/addToCart?id=${productId}&quantity=${quantity}`, {
+
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    
+    let data = await response.json();
+    if (data.message === "Item already in cart!!") {
+        Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Product is already in cart.\n So quantity increased",
+            showConfirmButton: true,
+            confirmButtonColor: "#79a206",
+        });
+    } else {
+        Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Product successfully added to cart",
+            showConfirmButton: true,
+            confirmButtonColor: "#79a206",
+        });
+    }
+} catch (error) {
+    console.error("An error occurred:", error);
+    // You can add code here to handle the error, show an error message, or perform any other necessary actions.
+}
+};
+
+
+
+           
+
             </script>
+
             
 
 

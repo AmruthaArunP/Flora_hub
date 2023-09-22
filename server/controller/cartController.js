@@ -76,10 +76,10 @@ const viewCart = async (req, res) => {
         if (cart.length === 0) {
             res.render("emptyCart", { userDatas, categoryData ,loggedIn:true});
         } else {
-            res.render("viewCart", { userDatas, coupons,cart, subTotal, categoryData,loggedIn:true, filtertype:null,keyword:null,});
+            res.render("Viewcart", { userDatas, coupons,cart, subTotal, categoryData,loggedIn:true, filtertype:null,keyword:null,});
         }
     }else{
-        res.render("viewCart", { userDatas,coupons, cart, subTotal, filtertype:null,keyword:null, categoryData,loggedIn:true });
+        res.render("Viewcart", { userDatas,coupons, cart, subTotal, filtertype:null,keyword:null, categoryData,loggedIn:true });
 
     }
 

@@ -67,12 +67,7 @@ const viewCart = async (req, res) => {
         let subTotal = 0;
 
 
-        // cart.forEach(async (val) => {
-        //     const categoryID = await Category.findById(val.product.categoryID);
-        //     subTotal += (val.product.price - (val.product.price * (categoryID.offer / 100))) * val.quantity;
-            
-        // });
-       
+              
         if (cart.length === 0) {
             res.render("emptyCart", { userDatas, categoryData ,loggedIn:true});
         } else {

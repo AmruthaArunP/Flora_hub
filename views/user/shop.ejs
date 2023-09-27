@@ -37,22 +37,10 @@
                         <!--shop wrapper start-->
                         <!--shop toolbar start-->
                         <div class="shop_toolbar_wrapper">
-                            <div class="shop_toolbar_btn">
-
-                                <button data-role="grid_3" type="button" class=" btn-grid-3" data-bs-toggle="tooltip"
-                                    title="3"></button>
-
-                                <button data-role="grid_4" type="button" class="active btn-grid-4"
-                                    data-bs-toggle="tooltip" title="4"></button>
-
-                                <button data-role="grid_list" type="button" class="btn-list" data-bs-toggle="tooltip"
-                                    title="List"></button>
-                            </div>
                             <div>
-
-
                                  <form action="/shop" method="get" id="filterForm">
-                                    <div class="form-group">
+                                    <div class="form-group" style="display: flex;">
+                                    <input name="keyword" value="<%=keyword%>" hidden />
                                       <select class="form-control" id="sortSelect" name="filtertype" onchange="submitForm()">
                                         <option <% if (!filtertype) { %>disabled selected<% } %>>Category Filter</option>
                                         <option value="indoor plants" <% if (filtertype === 'indoor plants') { %>selected<% } %>>Indoor plants</option>
@@ -62,14 +50,32 @@
                                         <option value="cactus" <% if (filtertype === 'cactus') { %>selected<% } %>>Cactus</option>
                                         <option value="aquatic plants" <% if (filtertype === 'aquatic plants') { %>selected<% } %>>Aquatic plants</option>
                                       </select>
+                                      <div class="page_amount">
+                                        <% if (filtertype) { %>
+                                            <a href="/shop" style="display: inline-block; padding: 5px 10px; background-color: #007bff; color: #fff; text-decoration: none; border: 1px solid #007bff; border-radius: 4px; cursor: pointer;" onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007bff'">X</a>
+                                            <% } %>
                                     </div>
-                                    <input type="submit" style="display: none;" /> <!-- Hidden submit button -->
+                                    
+                                    </div>
                                   </form> 
-
-
                             </div>
                             <div class="page_amount">
-                                <p>Showing 1–9 of 21 results</p>
+                                  <form action="/shop" method="get" id="sortForm">
+                                    <div style="display: flex;">
+                                    <div class="form-group">
+                                      <select class="form-control" id="sortSelect" name="sort" onchange="submitSort()">
+                                        <option <% if (!sort) { %>disabled selected<% } %>>Sort by</option>
+                                        <option value="low-to-high" <%= sort === 'low-to-high' ? 'selected' : '' %>>Price: Low to High</option>
+                                        <option value="high-to-low" <%= sort === 'high-to-low' ? 'selected' : '' %>>Price: High to Low</option>
+                                      </select>
+                                    </div>
+                                      <div class="page_amount">
+                                        <% if (sort) { %>
+                                            <a href="/shop" style="display: inline-block; padding: 5px 10px; background-color: #007bff; color: #fff; text-decoration: none; border: 1px solid #007bff; border-radius: 4px; cursor: pointer;" onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007bff'">X</a>
+                                            <% } %>
+                                    </div>
+                                    </div>
+                                  </form>
                             </div>
                         </div>
                         <!--shop toolbar end-->
@@ -106,10 +112,11 @@
                                                                 <li class="add_to_cart"><a href="/cart"
                                                                         title="Add to cart"><i  onclick="addToCart('<%=product.id%>')" id="addToCartBtn" 
                                                                             class="icon-shopping-bag"></i></a></li>
-                                                                            
 
-                                                                <li class="wishlist"><a href="/wishlist"
-                                                                        title="Add to Wishlist"><i
+                                                                        
+
+                                                                <li class="wishlist"><a 
+                                                                        title="Add to Wishlist"><i onclick="addToWishlist('<%= product._id %>','<%= cartId %>')"
                                                                             class="icon-heart"></i></a></li>
                                                                
                                                             </ul>
@@ -140,63 +147,7 @@
                                                          
                                                         </div>
                                                       </div>
-                                                    <div class="product_content list_content">
-                                                        
-                                                        <h4 class="product_name"><a
-                                                                href="/productDetails/<%=product.id %>">
-                                                                <%=product.product_name%>
-                                                            </a>
-
-                                                        </h4>
-                                                        <div class="price_box">
-                                                            <span class="current_price">
-                                                                <%=product.price%>/-
-                                                            </span>
-                                                        </div>
-                                                        <div class="product_desc">
-                                                            <p>
-                                                                <%=product.product_details%>
-                                                            </p>
-                                                        </div>
-                                                        <div class="action_links list_action_right">
-                                                            <ul>
-                                                                <input min="1" max="100" id="<%= product.id %>"
-                                                                    value="1" type="number" >
-                                                                   
-                                                                    <% if (product.stock) { %>
-
-                                                                            <% if (product.isOnCart) { %>
-                                
-                                                                                <button class="button"><a href="/viewCart/?id=<%= userData._id %>">Go To
-                                                                                        Cart</a></button>       
-                                
-                                                                                <% } else { %>
-                                                                                    <li class="add_to_cart"><a class="addToCartButton"
-                                                                                        title="Add to cart"
-                                                                                        onclick="addToCart('<%=product.id%>')"
-                                                                                        id="addToCartBtn">Add to
-                                                                                        cart</a></li>
-                                
-                                                                                      <% } %>
-                                
-                                                                                            
-                                                                                                <% } else { %>
-                                
-                                                                                                    &nbsp; &nbsp; <a class="btn btn-danger">Out of
-                                                                                                        stock</a>
-                                
-                                                                                                    <% } %>
-
-
-                                                              
-                                                                <li class="wishlist"><a href="/wishlist"
-                                                                        title="Add to Wishlist"><i
-                                                                            class="icon-heart"></i></a></li>
-
-
-                                                            </ul>
-                                                        </div>
-                                                    </div>
+                                        
                                                 </figure>
                                             </article>
                                         </div>
@@ -204,22 +155,29 @@
                                         <% }) %>
 
                                 </div>
-
+                          
 
                                 <div class="shop_toolbar t_bottom">
-                                    <div class="pagination">
+                                    <div class="pagination pagination-sm">
                                         <ul>
-                                            <li class="current">1</li>
-                                            <li><a href="#">2</a></li>
-                                            <li><a href="#">3</a></li>
-                                            <li class="next"><a href="#">next</a></li>
-                                            <li><a href="#">>></a></li>
+                                              <% if (totalPages > 1) { %>
+                                          <% for (let i = 1; i <= totalPages; i++) { %>
+                                              <% if (i === currentPage) { %>
+                                            <li class="current">
+                                                <span class="page-link"><%= i %></span>
+                                            </li>
+                                             <% } else { %>
+                                            <li class="current">
+                                                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                                            </li>
+                                            <% } %>
+                                            <% } %>
+                                        <% } %>
+                                           
                                         </ul>
                                     </div>
                                 </div>
-                                <!--shop toolbar end-->
-                                <!--shop wrapper end-->
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -275,61 +233,14 @@
             <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 
 
-            <script src="/assets/js/addto.cart.js"></script>
             <script>
                 function submitForm() {
                     document.getElementById("filterForm").submit();
                 }
 
-               
-const addToCart = async (productId) => {
-
-try {
-    console.log("add to cart")
-event.preventDefault();
-    const addToCartButton = document.getElementById("addToCartBtn");
-    const newButton = document.querySelectorAll("#addToCartBtn")
-    let quantity = document.getElementById(productId).value;
-    
-    if(quantity === null){
-        quantity = 1
-    }
-          
-    const response = await fetch(`/addToCart?id=${productId}&quantity=${quantity}`, {
-
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    });
-    
-    let data = await response.json();
-    if (data.message === "Item already in cart!!") {
-        Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Product is already in cart.\n So quantity increased",
-            showConfirmButton: true,
-            confirmButtonColor: "#79a206",
-        });
-    } else {
-        Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Product successfully added to cart",
-            showConfirmButton: true,
-            confirmButtonColor: "#79a206",
-        });
-    }
-} catch (error) {
-    console.error("An error occurred:", error);
-    // You can add code here to handle the error, show an error message, or perform any other necessary actions.
-}
-};
-
-
-
-           
+                function submitSort() {
+                    document.getElementById("sortForm").submit();
+                }
 
             </script>
 

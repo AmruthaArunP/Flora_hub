@@ -100,7 +100,7 @@ const index = async (req, res) => {
 //user Registration
 const user_register = (req, res) => {
     try {
-      res.render("user_register", { message: "" });
+      res.render("user_register", { message: "",keyword:null,filtertype:null });
       if (req.session.user) {
         res.redirect("my_account");
       } else {
@@ -179,16 +179,16 @@ const otp_verification = async (req, res) => {
         res.render("user_login", {
           message: "Successfully registered!",
           loggedIn: false,
-          blocked: false,
+          blocked: false, keyword:null,filtertype:null
         });
       } else {
-        res.render("otp_verification", { message: "wrong OTP" });
+        res.render("otp_verification", { message: "wrong OTP", keyword:null,filtertype:null});
       }
     } catch (error) {
       console.log(error);
       res.render("otp_verification", {
         message: "Error registering new user",
-        loggedIn: false,
+        loggedIn: false,keyword:null,filtertype:null
       });
     }
   };
@@ -208,14 +208,15 @@ const otp_verification = async (req, res) => {
  
   const forgot_password = async (req, res) => {
     try {
+      
         const categoryData = await Category.find({ is_blocked: false });
     
         if (req.session.forgotEmailNotExist) {
            
-            res.render("forgot_password", {categoryData,emailNotExist: "Sorry, email does not exist! Please register now!" ,loggedIn:false,walletBalance,subTotal:0,cart:{}});
+            res.render("forgot_password", {categoryData,emailNotExist: "Sorry, email does not exist! Please register now!" ,loggedIn:false,walletBalance,subTotal:0,cart:{},keyword:null,filtertype:null});
             req.session.forgotEmailNotExist = false;
         } else {
-            res.render("forgot_password",{loggedIn:false,categoryData});
+              res.render("forgot_password",{loggedIn:false,categoryData,keyword:null,filtertype:null});
         }
     } catch (error) {
         console.log(error.message);
@@ -257,10 +258,10 @@ const showForgotOtp = async (req, res) => {
   try {
       const categoryData = await Category.find({ is_blocked: false });
       if (req.session.wrongOtp) {
-          res.render("forgotOtpEnter", { invalidOtp: "Otp does not match" ,loggedIn:false});
+          res.render("forgotOtpEnter", { invalidOtp: "Otp does not match" ,loggedIn:false,keyword:null,filtertype:null});
           req.session.wrongOtp = false;
       } else {
-          res.render("forgotOtpEnter", { countdown: true ,loggedIn:false, invalidOtp:"" });
+          res.render("forgotOtpEnter", { countdown: true ,loggedIn:false, invalidOtp:"",keyword:null,filtertype:null });
       }
   } catch (error) {
       console.log(error.message);
@@ -276,7 +277,7 @@ const verifyForgotOtp = async (req, res) => {
       const userEnteredOtp = txt1+txt2+txt3+txt4
    
       if (userEnteredOtp === forgotPasswordOtp) {
-          res.render("passwordReset",{loggedIn:false,invalidOtp:""});
+          res.render("passwordReset",{loggedIn:false,invalidOtp:"",keyword:null,filtertype:null});
       } else {
           req.session.wrongOtp = true;
           res.redirect("/forgotOtpEnter");
@@ -309,7 +310,7 @@ const updatePassword = async (req, res) => {
       const userDataS = await userData.findOneAndUpdate({ email: emailId }, { $set: { password: securedPassword } });
       if (userDataS) {
           req.session.passwordUpdated = true;
-          res.render("user_login",{blocked:false,loggedIn:false});
+          res.render("user_login",{message: "Password updated successfully7",blocked:false,loggedIn:false,keyword:null,filtertype:null});
       } else {
           console.log("Something error happened");
       }
@@ -342,18 +343,18 @@ const updatePassword = async (req, res) => {
   // User Login Post
   const user_login_post = async (req, res) => {
     try {
+    let keyword;
+
       const { user_name, password } = req.body;
       if (!user_name || !password) {
-        res.render("user_login", {
-          message: "Username and Password can't be empty",
-        });
+        res.render("user_login", {message: "Username and Password can't be empty",keyword:null,filtertype:null});
       }
       let email = user_name;
       let exist = await userData.findOne({ email: email });
   
       if (exist) {
         if (exist.is_blocked) {
-          res.render("user_login", { message: "You account is blocked !!" });
+          res.render("user_login", { message: "You account is blocked !!" ,keyword:null,filtertype:null});
         }
   
         const decodedPassword = await bcrypt.compare(password, exist.password);
@@ -363,10 +364,10 @@ const updatePassword = async (req, res) => {
           req.session.user = exist;
           res.redirect("index");
         } else {
-          res.render("user_login", { message: "The password is incorrect" });
+          res.render("user_login", { message: "The password is incorrect" ,keyword:null,filtertype:null});
         }
       } else {
-        res.render("user_login", { message: "User not found please signup" });
+        res.render("user_login", { message: "User not found please signup" ,keyword:null,filtertype:null});
       }
     } catch (error) {
       console.log(error);
@@ -443,67 +444,13 @@ const my_account = async (req, res) => {
   }
 };
 
-// const shop = async (req, res) => {
-//   try {
-//     const filtertype = req.query.filtertype
-//     let productDatas,keyword;
-//     let query={}
-//     // Search key retaining search place
-//     if (req.query.keyword && req.query.keyword !== 'false') {
-//       keyword = req.query.keyword;
-//       query.product_name = new RegExp(keyword, 'i');
-//       } else {
-//       keyword = false;
-//       }
-
-
-//     // Search codes here
-//     const search = req.query.keyword;
-//     if (search) {
-//       productDatas = await productData.find({
-//         $or: [
-//           { product_name: { $regex: ".*" + search + ".*", $options: "i" } },
-//           { category: { $regex: ".*" + search + ".*", $options: "i" } },
-//         ],
-//       });
-//     } else if(filtertype){
-//       productDatas = await productData.find({ category: filtertype });
-//     }
-//     else {
-//       productDatas = await productData.find().populate({path: 'categoryID', model: 'category'});
-//     } 
-    
-//     // category filter
-//     if (req.session.user) {
-//       req.session.checkout = true;
-//       const userDatas = req.session.user;
-//       const userId = userDatas._id;
-//       const filtertype= req.query.filtertype
-//       // walletBalance=userDatas.wallet.balance
-//       const categoryData = await Category.find({ is_blocked: false });
-//       const user = await userData
-//         .findOne({ _id: userId })
-//         .populate({ path: "cart" })
-//         .populate({ path: "cart.product", model: "productCollection" });
-//       const cart = user.cart;
-//       let subTotal = 0;
-
-     
-//       res.render("shop", {productDatas,userDatas,cart,subTotal,categoryData,filtertype,wishlistLength:null,message: "true",keyword});
-//     } else {
-//       res.render("shop", { productDatas,filtertype, message: "false",keyword });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Internal Server Error");
-//   }
-// };
 
 const shop = async (req, res) => {
   try {
-    const filtertype = req.query.filtertype;
+    let filtertype;
     let productDatas, keyword;
     let query = {};
+    const ITEMS_PER_PAGE = 8;
 
     // Retaining search key for the search input
     if (req.query.keyword && req.query.keyword !== 'false') {
@@ -514,40 +461,30 @@ const shop = async (req, res) => {
     }
 
     // Initialize the base query
-    if (filtertype) {
-      query.category = filtertype;
-    }
-
-    // Search codes here
-    const search = req.query.keyword;
-
-    if (search) {
-      const searchQuery = {
-        $or: [
-          { product_name: { $regex: ".*" + search + ".*", $options: "i" } },
-          { category: { $regex: ".*" + search + ".*", $options: "i" } },
-        ],
-      };
-
-      // If a category filter is applied, combine it with the search query
-      if (filtertype) {
-        query = {
-          $and: [query, searchQuery],
-        };
-      } else {
-        // Otherwise, use only the search query
-        query = searchQuery;
-      }
-
-      productDatas = await productData.find(query);
-    } else if (filtertype) {
-      // If no search query, but a category filter is applied, use the category filter
-      productDatas = await productData.find(query);
+    if (req.query.filtertype && req.filtertype !== 'false') {
+      query.category = req.query.filtertype;
     } else {
-      // If no search or filter, retrieve all products
-      productDatas = await productData.find().populate({ path: 'categoryID', model: 'category' });
+      filtertype = false;
     }
 
+    let sortOption = {}; 
+    if (req.query.sort) {
+      if (req.query.sort === 'low-to-high') {
+        sortOption = { price: 1 }; 
+      } else if (req.query.sort === 'high-to-low') {
+        sortOption = { price: -1 }; 
+      }
+    }
+
+    const page = +req.query.page || 1;
+    const totalProducts = await productData.countDocuments(query); 
+    const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+    const skip = (page - 1) * ITEMS_PER_PAGE;
+    productDatas = await productData.find(query).sort(sortOption).skip(skip).limit(ITEMS_PER_PAGE).populate({ path: 'categoryID', model: 'category' });
+
+    
+
+    // productDatas = await productData.find(query).sort(sortOption).populate({ path: 'categoryID', model: 'category' });
     // category filter
     if (req.session.user) {
       req.session.checkout = true;
@@ -563,10 +500,9 @@ const shop = async (req, res) => {
       const cart = user.cart;
       let subTotal = 0;
 
-     
-      res.render("shop", {productDatas,userDatas,cart,subTotal,categoryData,filtertype,wishlistLength:null,message: "true",keyword});
+      res.render("shop", {productDatas,userDatas,cart,subTotal,categoryData,filtertype,wishlistLength:null,message: "true",keyword,cartId: null,sort: req.query.sort,currentPage: page,totalPages});
     } else {
-      res.render("shop", { productDatas,filtertype, message: "false",keyword });
+      res.render("shop", { productDatas,filtertype, message: "false",keyword , cartId: null,sort: req.query.sort,currentPage: page,totalPages});
     }
 
 

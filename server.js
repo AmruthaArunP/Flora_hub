@@ -17,7 +17,7 @@ const user_route = require('./server/routes/user_route')
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
-app.use(morgan('tiny'))
+// app.use(morgan('tiny'))
 app.use(nocache());
 // app.use(bodyparser.json());
 // app.use(bodyparser.urlencoded({extended:true}))

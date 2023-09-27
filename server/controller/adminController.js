@@ -80,7 +80,7 @@ const adminLogout = (req, res) => {
 
 const viewOrders = async (req, res) => {
     try {
-        const ordersPerPage = 5;
+        const ordersPerPage = 8;
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * ordersPerPage;
         let orderData = await Order.find().sort({ date: -1 }).skip(skip).limit(ordersPerPage);

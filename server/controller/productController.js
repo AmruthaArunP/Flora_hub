@@ -66,8 +66,24 @@ const addProductPost = async (req, res) => {
 
   const viewProducts = async (req, res) => {
     try {
-      const data = await productData.find();
-      res.render("view_products", { data });
+      const ordersPerPage = 5;
+      const page = parseInt(req.query.page) || 1;
+      const skip = (page - 1) * ordersPerPage;
+      const totalCount = await productData.countDocuments();
+      const totalPages = Math.ceil(totalCount / ordersPerPage);
+
+      //search
+      let query = {};
+      if (req.query.search) {
+        const searchQuery = new RegExp(req.query.search, 'i');
+        query = { product_name: searchQuery };
+      }
+
+      if (req.query.filtertype && req.query.filtertype !== 'false') {
+        query.category = req.query.filtertype;
+      }
+      const data = await productData.find(query).sort({ date: -1 }).skip(skip).limit(ordersPerPage);
+      res.render("view_products", { data,currentPage: page,totalPages,search: req.query.search,filtertype:req.query.filtertype});
     } catch (error) {
       console.error(error);
       res.status(500).send("Internal Server Error");
@@ -103,15 +119,17 @@ const addProductPost = async (req, res) => {
   const updateProductPost = async (req, res) => {
     const { product_name, product_details, category, price, quantity } = req.body;
     const id = req.params.id;
-  
+    console.log(id)
     try {
       const product = await productData.findById(id);
+      console.log("product",product)
       if (!product) {
         return res.render("update_product", { message: "Product not found",data:null });
       }
 
       const categoryID = await Category.findOne({category: req.body.category});
-  
+      console.log("********categoryID:",categoryID);
+      
       product.product_name = product_name;
       product.product_details = product_details;
       product.category = category;
@@ -174,7 +192,8 @@ const addProductPost = async (req, res) => {
   const viewCategory = async (req, res) => {
     try {
       const data = await Category.find();
-      res.render("viewCategory", { data });
+      const catlength = data.length;
+      res.render("viewCategory", { data,catlength });
     } catch (error) {
       console.error(error);
       res.status(500).send("Internal Server Error");

@@ -176,11 +176,15 @@
                                                         </a>
                                                     </h4>
                                                     <div class="price_box">
-                                                        <span class="current_price">
-                                                            <%=product.price - (product.price * (product.categoryID.offer / 100)) %>/-
+                                                       
+                                                            <% if (product.categoryID.offer) { %>
 
-                                                        </span>
-                                                        <span style="text-decoration: line-through;"><%=product.price%></span>
+                                                                <span class="current_price">&#x20B9; <%= (product.price - (product.price * (product.categoryID.offer / 100))) %>/-</span>
+                                                                <span style="text-decoration: line-through;">&#x20B9; <%= product.price %></span>
+                                                              <% }else{ %>
+                                                                <span >&#x20B9; <%= product.price %></span>
+                                                              <% } %>
+                                                       
                                                     </div>
                                                 </figcaption>
                                             </figure>

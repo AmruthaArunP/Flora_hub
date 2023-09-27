@@ -1,3 +1,90 @@
+////important
+
+const shop = async (req, res) => {
+    console.log(req.query);
+    try {
+      let filtertype;
+      let productDatas, keyword;
+      let query = {};
+  
+      // Retaining search key for the search input
+      if (req.query.keyword && req.query.keyword !== 'false') {
+        keyword = req.query.keyword;
+        query.product_name = new RegExp(keyword, 'i');
+      } else {
+        keyword = false;
+      }
+  
+      // Initialize the base query
+      if (req.query.filtertype && req.filtertype !== 'false') {
+        query.category = req.query.filtertype;
+      } else {
+        filtertype = false;
+      }
+  
+      // Search codes here
+  
+      // if (keyword) {
+      //   const searchQuery = {
+      //     $or: [
+      //       { product_name: { $regex: ".*" + keyword + ".*", $options: "i" } },
+      //       { category: { $regex: ".*" +  + ".*", $options: "i" } },
+      //     ],
+      //   };
+  
+      //   // If a category filter is applied, combine it with the search query
+      //   if (filtertype) {
+      //     query = {
+      //       $and: [query, searchQuery],
+      //     };
+      //   } else {
+      //     // Otherwise, use only the search query
+      //     query = searchQuery;
+      //   }
+  
+      //   productDatas = await productData.find(query);
+      // } else if (filtertype) {
+      //   // If no search query, but a category filter is applied, use the category filter
+      //   productDatas = await productData.find(query);
+      // } else 
+      //   // If no search or filter, retrieve all products
+      productDatas = await productData.find(query).populate({ path: 'categoryID', model: 'category' });
+  
+      // category filter
+      if (req.session.user) {
+        req.session.checkout = true;
+        const userDatas = req.session.user;
+        const userId = userDatas._id;
+        const filtertype= req.query.filtertype
+        // walletBalance=userDatas.wallet.balance
+        const categoryData = await Category.find({ is_blocked: false });
+        const user = await userData
+          .findOne({ _id: userId })
+          .populate({ path: "cart" })
+          .populate({ path: "cart.product", model: "productCollection" });
+        const cart = user.cart;
+        let subTotal = 0;
+  
+       
+        res.render("shop", {productDatas,userDatas,cart,subTotal,categoryData,filtertype,wishlistLength:null,message: "true",keyword});
+      } else {
+        res.render("shop", { productDatas,filtertype, message: "false",keyword });
+      }
+  
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
+    }
+  };
+
+  ////////end imp
+
+  ///////////// shop.ejs
+
+  
+
+
 const checkout = async (req, res) => {
   try {
       const productDatas = await productData.find();

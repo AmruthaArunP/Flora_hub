@@ -51,6 +51,8 @@ const addToCart = async (productId) => {
 
 
 
+
+
 function calculateSubtotal() {
     let cartItems = document.querySelectorAll('tbody#cart-container tr');
     let subtotal = 0;
@@ -208,6 +210,49 @@ const removeFromCart = async (productId, cartId) => {
 ////////////////ADDRESS MANAGEMENT////////////////
 
 ///////////Add Address///////////
+const userEditAddress = document.getElementById("userEditAddress");
+const addressId = document.getElementById("userAddressIdEdit").value;
+
+if (userEditAddress) {
+    userEditAddress.addEventListener("submit", async function (event) {
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+
+        try {
+            const response = await fetch(`/editAddressPost?addressId=${addressId}`, {
+                method: "POST",
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Address updated",
+                    showConfirmButton: true,
+                    confirmButtonText: "OK",
+                    confirmButtonColor: "#79a206",
+                });
+                window.location.href = "/my_account";
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Some error occured",
+                    showConfirmButton: true,
+                    confirmButtonText: "CANCEL",
+                    confirmButtonColor: "#D22B2B",
+                });
+            }
+        } catch (error) {
+            console.log("Error:", error.message);
+        }
+
+    });
+}
 
 const addAddressBtn = document.getElementById("addAddressBtn");
 console.log(100)

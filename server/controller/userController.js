@@ -680,6 +680,71 @@ const addNewAddress = async (req, res) => {
   }
 };
 
+const updateAddress = async (req, res) => {
+  try {
+    const addressId = req.query.addressId;
+
+    const updatedAddress = await Address.findByIdAndUpdate(
+      addressId,
+      {
+        name: req.body.name,
+        mobile: req.body.mobile,
+        addressLine: req.body.addressLine,
+        email: req.body.email,
+        city: req.body.city,
+        state: req.body.state,
+        pincode: req.body.pincode,
+      },
+      { new: true }
+    );
+
+    if (updatedAddress) {
+      res.status(200).send();
+    } else {
+      res.status(500).send();
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const editAddress = async (req, res) => {
+  try {
+    const addressId = req.query.addressId;
+    const address = await Address.findById(addressId);
+    res.render("editAddress", { address, message: "" });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const editAddressPost = async (req, res) => {
+  try {
+    const addressId = req.query.addressId;
+    const updatedAddress = await Address.findByIdAndUpdate(
+      addressId,
+      {
+        name: req.body.name,
+        mobile: req.body.mobile,
+        addressLine: req.body.addressLine,
+        email: req.body.email,
+        city: req.body.city,
+        state: req.body.state,
+        pincode: req.body.pincode,
+      },
+      { new: true }
+    );
+
+    if (updatedAddress) {
+      res.status(200).send();
+    } else {
+      res.status(500).send();
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const updateProfile = async (req, res) => {
   try {
     const userId = req.session.user;
@@ -746,6 +811,9 @@ module.exports={
     user_logout,
     productDetails,
     addNewAddress,
+    editAddress,
+    editAddressPost,
+    updateAddress,
     updateProfile,
     userOrderDetails,
     contact

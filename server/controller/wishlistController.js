@@ -57,6 +57,9 @@ const addToWishlist = async (req, res) => {
     }
 };
 
+
+
+
 const addToCartFromWishlist = async (req, res) => {
     try {
         const userDatas = req.session.user;

@@ -15,6 +15,9 @@ const addToCart = async (req, res) => {
         const product = await productData.findById(productId);
         const existed = await userData.findOne({ _id: userId, "cart.product": productId });
         // const filter={_id:productId}
+        if(quantity > product.stock){
+            return res.status(401).end();
+        }
         if (existed) {
             await userData.findOneAndUpdate(
                 { _id: userId, "cart.product": productId },

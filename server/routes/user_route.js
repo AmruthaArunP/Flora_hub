@@ -54,6 +54,11 @@ user_route.post('/validateCoupon', couponController.validateCoupon)
 
 
 user_route.post('/addNewAddress', userController.addNewAddress)
+user_route.post('/updateAddress', userController.updateAddress)
+user_route.get('/editAddress', userController.editAddress)
+user_route.post('/editAddressPost', userController.editAddressPost)
+
+
 user_route.post('/placeOrder', orderController.placeOrder)
 user_route.get('/orderSuccess', orderController.orderSuccess)
 user_route.post('/updateOrder', orderController.updateOrder)
@@ -61,6 +66,8 @@ user_route.post('/updateOrder', orderController.updateOrder)
 
 user_route.get('/addToWishlist', isLogin, blockCheck,  wishlistController.addToWishlist)
 user_route.get('/wishlist', isLogin, blockCheck, wishlistController.loadWishlist)
+user_route.get('/removeWishlist', isLogin, blockCheck,  wishlistController.removeWishlist)
+
 
 
 
